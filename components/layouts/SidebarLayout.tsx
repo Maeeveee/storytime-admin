@@ -24,22 +24,22 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
             ),
         },
         {
-            label: "Create Story",
-            href: "/stories/create",
+            label: "Story",
+            href: "/stories/",
             icon: (
                 <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
         },
         {
-            label: "Create Category",
-            href: "/categories/create",
+            label: "Category",
+            href: "/categories/",
             icon: (
                 <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
         },
         {
-            label: "Create User",
-            href: "/users/create",
+            label: "User",
+            href: "/users/",
             icon: (
                 <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             ),
