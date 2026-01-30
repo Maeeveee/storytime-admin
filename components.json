@@ -22,6 +22,7 @@
     "@aceternity": "https://ui.aceternity.com/registry/{name}.json",
     "@cardcn": "https://cardcn.dev/r/{name}.json",
     "@coss": "https://coss.com/ui/r/{name}.json",
-    "@bundui": "https://bundui.io/r/{name}.json"
+    "@bundui": "https://bundui.io/r/{name}.json",
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
   }
 }
