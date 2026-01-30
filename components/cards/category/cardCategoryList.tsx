@@ -1,7 +1,10 @@
 "use client";
-import { useState } from "react";
 import FilterCategory from "@/components/filters/category/filterCategory";
-import {EllipsisIcon} from "lucide-react"
+import { Trash2Icon } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { EllipsisIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import {
@@ -32,12 +35,34 @@ import {
     DropdownMenuSubContent,
     DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogMedia,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 export default function CardCategoryList() {
     return (
-        <div className="space-y-1">
+        <div className="space-y-4">
             <FilterCategory />
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6'>
+            <div className='flex flex-wrap justify-start gap-4'>
                 <Expandable expandDirection="both" expandBehavior="replace">
                     <ExpandableTrigger>
                         <ExpandableCard
@@ -67,9 +92,9 @@ export default function CardCategoryList() {
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Button size="icon" variant="outline" className="h-8 w-8">
+                                                            <button>
                                                                 <RowActions />
-                                                            </Button>
+                                                            </button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>More option</p>
@@ -236,7 +261,7 @@ function RowActions() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <div className="flex justify-end">
-                    <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
+                    <Button size="icon" variant="ghost" className="shadow-none border-1" aria-label="Edit item">
                         <EllipsisIcon size={16} aria-hidden="true" />
                     </Button>
                 </div>
@@ -247,15 +272,100 @@ function RowActions() {
                         <DropdownMenuSubTrigger>Edit</DropdownMenuSubTrigger>
                         <DropdownMenuPortal>
                             <DropdownMenuSubContent>
-                                <DropdownMenuItem>Edit Profile</DropdownMenuItem>
-                                <DropdownMenuItem>Reset Password</DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Dialog>
+                                        <form>
+                                            <DialogTrigger asChild>
+                                                <Button variant="ghost">Edit Profile</Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-[425px]">
+                                                <DialogHeader>
+                                                    <DialogTitle>Edit profile</DialogTitle>
+                                                    <DialogDescription>
+                                                        Make changes to your profile here. Click save when you&apos;re
+                                                        done.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="grid gap-4">
+                                                    <div className="grid gap-3">
+                                                        <Label htmlFor="name-1">Name</Label>
+                                                        <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
+                                                    </div>
+                                                    <div className="grid gap-3">
+                                                        <Label htmlFor="username-1">Username</Label>
+                                                        <Input id="username-1" name="username" defaultValue="@peduarte" />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <DialogClose asChild>
+                                                        <Button variant="outline">Cancel</Button>
+                                                    </DialogClose>
+                                                    <Button type="submit">Save changes</Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </form>
+                                    </Dialog>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Dialog>
+                                        <form>
+                                            <DialogTrigger asChild>
+                                                <Button variant="ghost">Reset Password</Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-[425px]">
+                                                <DialogHeader>
+                                                    <DialogTitle>Reset Password</DialogTitle>
+                                                    <DialogDescription>
+                                                        Make changes to your profile here. Click save when you&apos;re
+                                                        done.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="grid gap-4">
+                                                    <div className="grid gap-3">
+                                                        <Label htmlFor="name-1">Name</Label>
+                                                        <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
+                                                    </div>
+                                                    <div className="grid gap-3">
+                                                        <Label htmlFor="username-1">Username</Label>
+                                                        <Input id="username-1" name="username" defaultValue="@peduarte" />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <DialogClose asChild>
+                                                        <Button variant="outline">Cancel</Button>
+                                                    </DialogClose>
+                                                    <Button type="submit">Save changes</Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </form>
+                                    </Dialog>
+                                </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>
                     </DropdownMenuSub>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                    <span>Delete</span>
+                <DropdownMenuItem>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <span className="text-destructive">Delete category</span>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent size="sm">
+                            <AlertDialogHeader>
+                                <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                                    <Trash2Icon />
+                                </AlertDialogMedia>
+                                <AlertDialogTitle>Delete category?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete this category
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+                                <AlertDialogAction variant="destructive">Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

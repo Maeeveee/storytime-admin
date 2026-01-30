@@ -1,21 +1,31 @@
 "use client";
 import { useState } from "react";
-
-import { Button } from "@/components/ui/button"
-
+import HoloCard from "@/components/ui/holo-card";
 import {
+    CircleAlertIcon,
     CircleXIcon,
     Columns3Icon,
     FilterIcon,
     ListFilterIcon,
     PlusIcon,
     TagIcon,
+    TrashIcon
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-
-
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
     DropdownMenu,
@@ -23,10 +33,11 @@ import {
     DropdownMenuContent,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Item = {
@@ -79,7 +90,7 @@ const dummyStories: Item[] = [
 ];
 
 
-export default function FilterCategory() {
+export default function FilterStory() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -111,12 +122,13 @@ export default function FilterCategory() {
     return (
         <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
+                {/* Filter by title */}
                 <div className="relative">
                     <Input
                         className={cn(
                             "peer min-w-60 ps-9",
                         )}
-                        placeholder="Search category..."
+                        placeholder="Search story title..."
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -135,6 +147,7 @@ export default function FilterCategory() {
                     )}
                 </div>
 
+                {/* Filter by status */}
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline">
@@ -173,6 +186,7 @@ export default function FilterCategory() {
                     </PopoverContent>
                 </Popover>
 
+                {/* Filter by category */}
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline">
@@ -211,6 +225,7 @@ export default function FilterCategory() {
                     </PopoverContent>
                 </Popover>
 
+                {/* Toggle columns visibility */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline">
@@ -235,11 +250,11 @@ export default function FilterCategory() {
                 </DropdownMenu>
             </div>
             <div className="flex items-center gap-3">
+                {/* Add user button */}
                 <Button className="ml-auto" variant="outline">
                     <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
                     Add user
                 </Button>
             </div>
-        </div>
-    );
+        </div>);
 }
