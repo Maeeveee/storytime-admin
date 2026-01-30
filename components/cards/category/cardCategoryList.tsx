@@ -163,7 +163,7 @@ export default function CardCategoryList() {
                         </ExpandableCard>
                     </ExpandableTrigger>
                 </Expandable>
-                {/* 
+                
                 <Expandable expandDirection="both" expandBehavior="replace">
                     <ExpandableTrigger>
                         <ExpandableCard
@@ -177,7 +177,7 @@ export default function CardCategoryList() {
                                     <div className="w-full">
                                         <p className="text-xl font-bold">Adventure</p>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="w-full flex justify-end">
                                         <ExpandableContent
                                             preset="blur-sm"
                                             stagger
@@ -188,7 +188,21 @@ export default function CardCategoryList() {
                                                 animate: { opacity: 1, y: 0, rotate: 0 },
                                                 transition: { type: "spring", stiffness: 300, damping: 20 },
                                             }}>
-                                            <p className="font-bold">15 stories</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-bold">15 Stories</p>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <button>
+                                                                <RowActions />
+                                                            </button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>More option</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
                                         </ExpandableContent>
                                     </div>
                                 </div>
@@ -249,7 +263,210 @@ export default function CardCategoryList() {
                             </ExpandableCardFooter>
                         </ExpandableCard>
                     </ExpandableTrigger>
-                </Expandable> */}
+                </Expandable>
+
+                <Expandable expandDirection="both" expandBehavior="replace">
+                    <ExpandableTrigger>
+                        <ExpandableCard
+                            collapsedSize={{ width: 300, height: 220 }}
+                            expandedSize={{ width: 500, height: 420 }}
+                            hoverToExpand={false}
+                            expandDelay={100}
+                            collapseDelay={400}>
+                            <ExpandableCardContent>
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="w-full">
+                                        <p className="text-xl font-bold">Horror</p>
+                                    </div>
+                                    <div className="w-full flex justify-end">
+                                        <ExpandableContent
+                                            preset="blur-sm"
+                                            stagger
+                                            staggerChildren={0.1}
+                                            keepMounted={true}
+                                            animateIn={{
+                                                initial: { opacity: 0, y: 20, rotate: -5 },
+                                                animate: { opacity: 1, y: 0, rotate: 0 },
+                                                transition: { type: "spring", stiffness: 300, damping: 20 },
+                                            }}>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-bold">15 Stories</p>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <button>
+                                                                <RowActions />
+                                                            </button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>More option</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+                                        </ExpandableContent>
+                                    </div>
+                                </div>
+                                <ExpandableContent
+                                    preset="blur-sm"
+                                    stagger
+                                    staggerChildren={0.1}
+                                    keepMounted={true}
+                                    animateIn={{
+                                        initial: { opacity: 0, y: 20, rotate: -5 },
+                                        animate: { opacity: 1, y: 0, rotate: 0 },
+                                        transition: { type: "spring", stiffness: 300, damping: 20 },
+                                    }}>
+                                    <div className="space-y-2 mb-4">
+                                        <div className="flex justify-between items-center mb-8">
+                                            <div className="flex items-center">
+                                                <span>Top 5 Authors</span>
+                                            </div>
+                                            <span>Stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Rizal</span>
+                                            </div>
+                                            <span>8 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Bonifacio</span>
+                                            </div>
+                                            <span>3 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Luna</span>
+                                            </div>
+                                            <span>4 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Del Pilar</span>
+                                            </div>
+                                            <span>6 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Lopez Jaena</span>
+                                            </div>
+                                            <span>2 stories</span>
+                                        </div>
+                                    </div>
+                                </ExpandableContent>
+                            </ExpandableCardContent>
+                            <ExpandableCardFooter>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Last story created: 5 minutes ago
+                                </p>
+                            </ExpandableCardFooter>
+                        </ExpandableCard>
+                    </ExpandableTrigger>
+                </Expandable>
+
+                <Expandable expandDirection="both" expandBehavior="replace">
+                    <ExpandableTrigger>
+                        <ExpandableCard
+                            collapsedSize={{ width: 300, height: 220 }}
+                            expandedSize={{ width: 500, height: 420 }}
+                            hoverToExpand={false}
+                            expandDelay={100}
+                            collapseDelay={400}>
+                            <ExpandableCardContent>
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="w-full">
+                                        <p className="text-xl font-bold">Romance</p>
+                                    </div>
+                                    <div className="w-full flex justify-end">
+                                        <ExpandableContent
+                                            preset="blur-sm"
+                                            stagger
+                                            staggerChildren={0.1}
+                                            keepMounted={true}
+                                            animateIn={{
+                                                initial: { opacity: 0, y: 20, rotate: -5 },
+                                                animate: { opacity: 1, y: 0, rotate: 0 },
+                                                transition: { type: "spring", stiffness: 300, damping: 20 },
+                                            }}>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-bold">15 Stories</p>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <button>
+                                                                <RowActions />
+                                                            </button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>More option</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+                                        </ExpandableContent>
+                                    </div>
+                                </div>
+                                <ExpandableContent
+                                    preset="blur-sm"
+                                    stagger
+                                    staggerChildren={0.1}
+                                    keepMounted={true}
+                                    animateIn={{
+                                        initial: { opacity: 0, y: 20, rotate: -5 },
+                                        animate: { opacity: 1, y: 0, rotate: 0 },
+                                        transition: { type: "spring", stiffness: 300, damping: 20 },
+                                    }}>
+                                    <div className="space-y-2 mb-4">
+                                        <div className="flex justify-between items-center mb-8">
+                                            <div className="flex items-center">
+                                                <span>Top 5 Authors</span>
+                                            </div>
+                                            <span>Stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Rizal</span>
+                                            </div>
+                                            <span>8 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Bonifacio</span>
+                                            </div>
+                                            <span>3 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Luna</span>
+                                            </div>
+                                            <span>4 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Del Pilar</span>
+                                            </div>
+                                            <span>6 stories</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <span>Lopez Jaena</span>
+                                            </div>
+                                            <span>2 stories</span>
+                                        </div>
+                                    </div>
+                                </ExpandableContent>
+                            </ExpandableCardContent>
+                            <ExpandableCardFooter>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Last story created: 5 minutes ago
+                                </p>
+                            </ExpandableCardFooter>
+                        </ExpandableCard>
+                    </ExpandableTrigger>
+                </Expandable>
+               
             </div>
         </div>
     );
