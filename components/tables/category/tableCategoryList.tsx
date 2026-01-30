@@ -131,7 +131,7 @@ const columns: ColumnDef<Item>[] = [
     enableHiding: false
   },
   {
-    header: "Name",
+    header: "Category",
     accessorKey: "name",
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
     size: 180,
@@ -139,7 +139,7 @@ const columns: ColumnDef<Item>[] = [
     enableHiding: false
   },
   {
-    header: "Email",
+    header: "Desc",
     accessorKey: "email",
     size: 220
   },
