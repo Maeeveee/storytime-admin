@@ -58,12 +58,209 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
+const categoryList = [
+    {
+        id: 1,
+        name: "Fantasy",
+        stories: 15,
+        authors: [
+            {
+                id: 1,
+                name: "John Doe",
+                stories: 5,
+            },
+            {
+                id: 2,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 3,
+                name: "Bob Smith",
+                stories: 2,
+            },
+            {
+                id: 4,
+                name: "Alice Johnson",
+                stories: 4,
+            },
+            {
+                id: 5,
+                name: "Mike Brown",
+                stories: 1,
+            },
+        ],
+    },
+    {
+        id: 2,
+        name: "Sci-Fi",
+        stories: 10,
+        authors: [
+            {
+                id: 1,
+                name: "John Doe",
+                stories: 5,
+            },
+            {
+                id: 2,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 3,
+                name: "Bob Smith",
+                stories: 2,
+            },
+            {
+                id: 4,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 5,
+                name: "Bob Smith",
+                stories: 2,
+            },
+        ],
+    },
+    {
+        id: 3,
+        name: "Mystery",
+        stories: 8,
+        authors: [{
+            id: 1,
+            name: "John Doe",
+            stories: 5,
+        },
+        {
+            id: 2,
+            name: "Jane Doe",
+            stories: 3,
+        },
+        {
+            id: 3,
+            name: "Bob Smith",
+            stories: 2,
+        },
+        {
+            id: 4,
+            name: "Jane Doe",
+            stories: 3,
+        },
+        {
+            id: 5,
+            name: "Bob Smith",
+            stories: 2,
+        },
+        ],
+    },
+    {
+        id: 4,
+        name: "Thriller",
+        stories: 12,
+        authors: [
+            {
+                id: 1,
+                name: "John Doe",
+                stories: 5,
+            },
+            {
+                id: 2,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 3,
+                name: "Bob Smith",
+                stories: 2,
+            },
+            {
+                id: 4,
+                name: "Jane Doe",
+                stories: 2,
+            },
+            {
+                id: 5,
+                name: "Bob Smith",
+                stories: 1,
+            },
+        ],
+    },
+    {
+        id: 5,
+        name: "Romance",
+        stories: 20,
+        authors: [
+            {
+                id: 1,
+                name: "John Doe",
+                stories: 5,
+            },
+            {
+                id: 2,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 3,
+                name: "Bob Smith",
+                stories: 2,
+            },
+            {
+                id: 4,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 5,
+                name: "Bob Smith",
+                stories: 5,
+            },
+        ],
+    },
+    {
+        id: 6,
+        name: "Horror",
+        stories: 20,
+        authors: [
+            {
+                id: 1,
+                name: "John Doe",
+                stories: 5,
+            },
+            {
+                id: 2,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 3,
+                name: "Bob Smith",
+                stories: 2,
+            },
+            {
+                id: 4,
+                name: "Jane Doe",
+                stories: 3,
+            },
+            {
+                id: 5,
+                name: "Bob Smith",
+                stories: 5,
+            },
+        ],
+    },
+];
+
+
 export default function CardCategoryList() {
     return (
         <div className="space-y-4">
             <FilterCategory />
             <div className='flex flex-wrap justify-start gap-4'>
-                <Expandable expandDirection="both" expandBehavior="replace">
+              {categoryList.map((category, index) => (
+                  <Expandable key={category.id} expandDirection="both" expandBehavior="replace">
                     <ExpandableTrigger>
                         <ExpandableCard
                             collapsedSize={{ width: 300, height: 220 }}
@@ -74,7 +271,7 @@ export default function CardCategoryList() {
                             <ExpandableCardContent>
                                 <div className="flex justify-between items-center mb-4">
                                     <div className="w-full">
-                                        <p className="text-xl font-bold">Fantasy</p>
+                                        <p className="text-xl font-bold">{category.name}</p>
                                     </div>
                                     <div className="w-full flex justify-end">
                                         <ExpandableContent
@@ -88,7 +285,7 @@ export default function CardCategoryList() {
                                                 transition: { type: "spring", stiffness: 300, damping: 20 },
                                             }}>
                                             <div className="flex items-center gap-2">
-                                                <p className="font-bold">15 Stories</p>
+                                                <p className="font-bold">{category.stories} Stories</p>
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -124,33 +321,33 @@ export default function CardCategoryList() {
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center">
-                                                <span>Rizal</span>
+                                                <span>{category.authors[0].name}</span>
                                             </div>
-                                            <span>8 stories</span>
+                                            <span>{category.authors[0].stories} stories</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center">
-                                                <span>Bonifacio</span>
+                                                <span>{category.authors[1].name}</span>
                                             </div>
-                                            <span>3 stories</span>
+                                            <span>{category.authors[1].stories} stories</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center">
-                                                <span>Luna</span>
+                                                <span>{category.authors[2].name}</span>
                                             </div>
-                                            <span>4 stories</span>
+                                            <span>{category.authors[2].stories} stories</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center">
-                                                <span>Del Pilar</span>
+                                                <span>{category.authors[3].name}</span>
                                             </div>
-                                            <span>6 stories</span>
+                                            <span>{category.authors[3].stories} stories</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center">
-                                                <span>Lopez Jaena</span>
+                                                <span>{category.authors[4].name}</span>
                                             </div>
-                                            <span>2 stories</span>
+                                            <span>{category.authors[4].stories} stories</span>
                                         </div>
                                     </div>
                                 </ExpandableContent>
@@ -163,310 +360,7 @@ export default function CardCategoryList() {
                         </ExpandableCard>
                     </ExpandableTrigger>
                 </Expandable>
-                
-                <Expandable expandDirection="both" expandBehavior="replace">
-                    <ExpandableTrigger>
-                        <ExpandableCard
-                            collapsedSize={{ width: 300, height: 220 }}
-                            expandedSize={{ width: 500, height: 420 }}
-                            hoverToExpand={false}
-                            expandDelay={100}
-                            collapseDelay={400}>
-                            <ExpandableCardContent>
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="w-full">
-                                        <p className="text-xl font-bold">Adventure</p>
-                                    </div>
-                                    <div className="w-full flex justify-end">
-                                        <ExpandableContent
-                                            preset="blur-sm"
-                                            stagger
-                                            staggerChildren={0.1}
-                                            keepMounted={true}
-                                            animateIn={{
-                                                initial: { opacity: 0, y: 20, rotate: -5 },
-                                                animate: { opacity: 1, y: 0, rotate: 0 },
-                                                transition: { type: "spring", stiffness: 300, damping: 20 },
-                                            }}>
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-bold">15 Stories</p>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <button>
-                                                                <RowActions />
-                                                            </button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>More option</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                        </ExpandableContent>
-                                    </div>
-                                </div>
-                                <ExpandableContent
-                                    preset="blur-sm"
-                                    stagger
-                                    staggerChildren={0.1}
-                                    keepMounted={true}
-                                    animateIn={{
-                                        initial: { opacity: 0, y: 20, rotate: -5 },
-                                        animate: { opacity: 1, y: 0, rotate: 0 },
-                                        transition: { type: "spring", stiffness: 300, damping: 20 },
-                                    }}>
-                                    <div className="space-y-2 mb-4">
-                                        <div className="flex justify-between items-center mb-8">
-                                            <div className="flex items-center">
-                                                <span>Top 5 Authors</span>
-                                            </div>
-                                            <span>Stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Rizal</span>
-                                            </div>
-                                            <span>8 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Bonifacio</span>
-                                            </div>
-                                            <span>3 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Luna</span>
-                                            </div>
-                                            <span>4 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Del Pilar</span>
-                                            </div>
-                                            <span>6 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Lopez Jaena</span>
-                                            </div>
-                                            <span>2 stories</span>
-                                        </div>
-                                    </div>
-                                </ExpandableContent>
-                            </ExpandableCardContent>
-                            <ExpandableCardFooter>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Last story created: 5 minutes ago
-                                </p>
-                            </ExpandableCardFooter>
-                        </ExpandableCard>
-                    </ExpandableTrigger>
-                </Expandable>
-
-                <Expandable expandDirection="both" expandBehavior="replace">
-                    <ExpandableTrigger>
-                        <ExpandableCard
-                            collapsedSize={{ width: 300, height: 220 }}
-                            expandedSize={{ width: 500, height: 420 }}
-                            hoverToExpand={false}
-                            expandDelay={100}
-                            collapseDelay={400}>
-                            <ExpandableCardContent>
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="w-full">
-                                        <p className="text-xl font-bold">Horror</p>
-                                    </div>
-                                    <div className="w-full flex justify-end">
-                                        <ExpandableContent
-                                            preset="blur-sm"
-                                            stagger
-                                            staggerChildren={0.1}
-                                            keepMounted={true}
-                                            animateIn={{
-                                                initial: { opacity: 0, y: 20, rotate: -5 },
-                                                animate: { opacity: 1, y: 0, rotate: 0 },
-                                                transition: { type: "spring", stiffness: 300, damping: 20 },
-                                            }}>
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-bold">15 Stories</p>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <button>
-                                                                <RowActions />
-                                                            </button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>More option</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                        </ExpandableContent>
-                                    </div>
-                                </div>
-                                <ExpandableContent
-                                    preset="blur-sm"
-                                    stagger
-                                    staggerChildren={0.1}
-                                    keepMounted={true}
-                                    animateIn={{
-                                        initial: { opacity: 0, y: 20, rotate: -5 },
-                                        animate: { opacity: 1, y: 0, rotate: 0 },
-                                        transition: { type: "spring", stiffness: 300, damping: 20 },
-                                    }}>
-                                    <div className="space-y-2 mb-4">
-                                        <div className="flex justify-between items-center mb-8">
-                                            <div className="flex items-center">
-                                                <span>Top 5 Authors</span>
-                                            </div>
-                                            <span>Stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Rizal</span>
-                                            </div>
-                                            <span>8 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Bonifacio</span>
-                                            </div>
-                                            <span>3 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Luna</span>
-                                            </div>
-                                            <span>4 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Del Pilar</span>
-                                            </div>
-                                            <span>6 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Lopez Jaena</span>
-                                            </div>
-                                            <span>2 stories</span>
-                                        </div>
-                                    </div>
-                                </ExpandableContent>
-                            </ExpandableCardContent>
-                            <ExpandableCardFooter>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Last story created: 5 minutes ago
-                                </p>
-                            </ExpandableCardFooter>
-                        </ExpandableCard>
-                    </ExpandableTrigger>
-                </Expandable>
-
-                <Expandable expandDirection="both" expandBehavior="replace">
-                    <ExpandableTrigger>
-                        <ExpandableCard
-                            collapsedSize={{ width: 300, height: 220 }}
-                            expandedSize={{ width: 500, height: 420 }}
-                            hoverToExpand={false}
-                            expandDelay={100}
-                            collapseDelay={400}>
-                            <ExpandableCardContent>
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="w-full">
-                                        <p className="text-xl font-bold">Romance</p>
-                                    </div>
-                                    <div className="w-full flex justify-end">
-                                        <ExpandableContent
-                                            preset="blur-sm"
-                                            stagger
-                                            staggerChildren={0.1}
-                                            keepMounted={true}
-                                            animateIn={{
-                                                initial: { opacity: 0, y: 20, rotate: -5 },
-                                                animate: { opacity: 1, y: 0, rotate: 0 },
-                                                transition: { type: "spring", stiffness: 300, damping: 20 },
-                                            }}>
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-bold">15 Stories</p>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <button>
-                                                                <RowActions />
-                                                            </button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>More option</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                        </ExpandableContent>
-                                    </div>
-                                </div>
-                                <ExpandableContent
-                                    preset="blur-sm"
-                                    stagger
-                                    staggerChildren={0.1}
-                                    keepMounted={true}
-                                    animateIn={{
-                                        initial: { opacity: 0, y: 20, rotate: -5 },
-                                        animate: { opacity: 1, y: 0, rotate: 0 },
-                                        transition: { type: "spring", stiffness: 300, damping: 20 },
-                                    }}>
-                                    <div className="space-y-2 mb-4">
-                                        <div className="flex justify-between items-center mb-8">
-                                            <div className="flex items-center">
-                                                <span>Top 5 Authors</span>
-                                            </div>
-                                            <span>Stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Rizal</span>
-                                            </div>
-                                            <span>8 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Bonifacio</span>
-                                            </div>
-                                            <span>3 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Luna</span>
-                                            </div>
-                                            <span>4 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Del Pilar</span>
-                                            </div>
-                                            <span>6 stories</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center">
-                                                <span>Lopez Jaena</span>
-                                            </div>
-                                            <span>2 stories</span>
-                                        </div>
-                                    </div>
-                                </ExpandableContent>
-                            </ExpandableCardContent>
-                            <ExpandableCardFooter>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Last story created: 5 minutes ago
-                                </p>
-                            </ExpandableCardFooter>
-                        </ExpandableCard>
-                    </ExpandableTrigger>
-                </Expandable>
-               
+              ))}
             </div>
         </div>
     );
