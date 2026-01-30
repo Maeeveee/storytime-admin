@@ -101,27 +101,7 @@ export function TableDashboardTopAuthor() {
                         <TableCell>UX Team</TableCell>
                         <TableCell className="text-right">$7,200</TableCell>
                     </TableRow>
-                    <TableRow>
-                        <TableCell className="font-medium">Security Audit</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">
-                                <span
-                                    aria-hidden="true"
-                                    className="size-1.5 rounded-full bg-red-500"
-                                />
-                                Failed
-                            </Badge>
-                        </TableCell>
-                        <TableCell>Security Team</TableCell>
-                        <TableCell className="text-right">$2,100</TableCell>
-                    </TableRow>
                 </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={3}>Total Budget</TableCell>
-                        <TableCell className="text-right">$39,550</TableCell>
-                    </TableRow>
-                </TableFooter>
             </Table>
         </Card>
     );
