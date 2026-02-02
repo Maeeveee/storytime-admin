@@ -1,56 +1,69 @@
 "use client";
 import React, { useState } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
+import { Sidebar, SidebarBody, SidebarLink, useSidebar } from "@/components/ui/sidebar";
 import {
     IconBookFilled,
     IconCategoryFilled,
     IconHomeFilled,
     IconUserFilled,
+    IconLogout,
+    IconChevronUp,
 } from "@tabler/icons-react";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { AnimatePresence, motion } from "motion/react";
 
 interface SidebarLayoutProps {
     children: React.ReactNode;
 }
 
+interface NavLink {
+    label: string;
+    href: string;
+    icon: React.ReactNode;
+}
+
 export default function SidebarLayout({ children }: SidebarLayoutProps) {
-    const links = [
+    const { user, logout, isLoading } = useAuth();
+    const pathname = usePathname();
+    const [open, setOpen] = useState(false);
+
+    const links: NavLink[] = [
         {
             label: "Dashboard",
             href: "/",
-            icon: (
-                <IconHomeFilled className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-            ),
+            icon: <IconHomeFilled className="h-5 w-5 shrink-0" />,
         },
         {
             label: "Story",
-            href: "/stories/",
-            icon: (
-                <IconBookFilled className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-            ),
+            href: "/stories",
+            icon: <IconBookFilled className="h-5 w-5 shrink-0" />,
         },
         {
             label: "Category",
-            href: "/categories/",
-            icon: (
-                <IconCategoryFilled className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-            ),
+            href: "/categories",
+            icon: <IconCategoryFilled className="h-5 w-5 shrink-0" />,
         },
         {
             label: "User",
-            href: "/users/",
-            icon: (
-                <IconUserFilled className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-            ),
+            href: "/users",
+            icon: <IconUserFilled className="h-5 w-5 shrink-0" />,
         },
     ];
-    const [open, setOpen] = useState(false);
+
+    const userName = user?.name || "Loading...";
+    const userAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
+
+    const isActive = (href: string) => {
+        if (href === "/") return pathname === "/";
+        return pathname.startsWith(href);
+    };
 
     return (
         <div
             className={cn(
-                "flex w-full flex-1 flex-col overflow-auto border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
+                "flex w-full flex-1 flex-col overflow-auto border-neutral-200 bg-white md:flex-row dark:border-neutral-700 dark:bg-neutral-900",
                 "h-screen w-screen"
             )}
         >
@@ -60,34 +73,96 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
                         {open ? <Logo /> : <LogoIcon />}
                         <div className="mt-8 flex flex-col gap-2">
                             {links.map((link, idx) => (
-                                <SidebarLink key={idx} link={link} />
+                                <SidebarLink
+                                    key={idx}
+                                    link={link}
+                                    className={cn(
+                                        "rounded-md px-2 transition-colors",
+                                        isActive(link.href)
+                                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                                            : "hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                                    )}
+                                    iconClassName={isActive(link.href) ? "text-white dark:text-neutral-900" : "text-neutral-700 dark:text-neutral-200"}
+                                    labelClassName={isActive(link.href) ? "text-white dark:text-neutral-900" : ""}
+                                />
                             ))}
                         </div>
                     </div>
-                    <div>
-                        <SidebarLink
-                            link={{
-                                label: "Manu Arora",
-                                href: "#",
-                                icon: (
-                                    <img
-                                        src="https://assets.aceternity.com/manu.png"
-                                        className="h-7 w-7 shrink-0 rounded-full"
-                                        width={50}
-                                        height={50}
-                                        alt="Avatar"
-                                    />
-                                ),
-                            }}
-                        />
-                    </div>
+                    <UserMenu
+                        userName={isLoading ? "Loading..." : userName}
+                        userAvatar={userAvatar}
+                        onLogout={logout}
+                    />
                 </SidebarBody>
             </Sidebar>
             <main className="flex flex-1 overflow-auto">
-                <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-tl-2xl border border-neutral-200 bg-white p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
+                <div className="flex min-h-full w-full flex-1 flex-col gap-4 p-2 md:p-6">
                     {children}
                 </div>
             </main>
+        </div>
+    );
+}
+
+interface UserMenuProps {
+    userName: string;
+    userAvatar: string;
+    onLogout: () => Promise<void>;
+}
+
+function UserMenu({ userName, userAvatar, onLogout }: UserMenuProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const { open: sidebarOpen } = useSidebar();
+
+    return (
+        <div className="relative">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex w-full items-center gap-2 rounded-md py-2 hover:bg-neutral-200 transition-colors dark:hover:bg-neutral-700"
+            >
+                <img
+                    src={userAvatar}
+                    className="h-7 w-7 shrink-0 rounded-full object-cover"
+                    width={50}
+                    height={50}
+                    alt="Avatar"
+                />
+                {sidebarOpen && (
+                    <>
+                        <span className="flex-1 text-left text-sm text-neutral-700 dark:text-neutral-200 line-clamp-1">
+                            {userName}
+                        </span>
+                        <IconChevronUp
+                            className={cn(
+                                "h-4 w-4 text-neutral-500 transition-transform",
+                                isOpen ? "rotate-0" : "rotate-180"
+                            )}
+                        />
+                    </>
+                )}
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute bottom-full left-0 right-0 mb-2 rounded-md bg-white shadow-lg border border-neutral-200 dark:bg-neutral-800 dark:border-neutral-700 overflow-hidden"
+                    >
+                        <button
+                            onClick={() => {
+                                setIsOpen(false);
+                                onLogout();
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                            <IconLogout className="h-4 w-4" />
+                            <span>Logout</span>
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
