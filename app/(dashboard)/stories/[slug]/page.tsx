@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/lib/api/ApiProvider";
 import type { Story } from "@/repositories";
 import { IconArrowLeft, IconCalendar, IconUser, IconCategory, IconEdit } from "@tabler/icons-react";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import Link from "next/link";
 
 export default function StoryDetailPage() {
@@ -60,9 +61,10 @@ export default function StoryDetailPage() {
                 <p className="text-lg text-red-500">{error || "Story not found"}</p>
                 <button
                     onClick={() => router.back()}
-                    className="rounded-md bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900"
                 >
-                    Go Back
+                    <InteractiveHoverButton direction="left">
+                        Go Back
+                    </InteractiveHoverButton>
                 </button>
             </div>
         );
@@ -78,10 +80,10 @@ export default function StoryDetailPage() {
         <div className="mx-auto pb-10">
             <div className="mb-6 flex items-center justify-between">
                 <Link
-                    href="/stories"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white shadow-sm transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-                >
-                    <IconArrowLeft className="h-5 w-5" />
+                    href="/stories">
+                    <InteractiveHoverButton direction="left">
+                        Back
+                    </InteractiveHoverButton>
                 </Link>
 
                 <Link
