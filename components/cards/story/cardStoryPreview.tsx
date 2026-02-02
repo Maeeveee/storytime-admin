@@ -5,6 +5,9 @@ import FilterStory from "@/components/filters/story/filterStory";
 import { useApi } from "@/lib/api/ApiProvider";
 import type { Story, Category } from "@/repositories";
 
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 export default function CardStoryPreview() {
     const api = useApi();
     const [stories, setStories] = useState<StoryCardData[]>([]);
@@ -16,15 +19,24 @@ export default function CardStoryPreview() {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [meta, setMeta] = useState<any>(null);
+
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearch(searchQuery);
+            setCurrentPage(1);
         }, 500);
 
         return () => {
             clearTimeout(handler);
         };
     }, [searchQuery]);
+
+    const handleCategoryChange = (val: string | null) => {
+        setSelectedCategoryId(val);
+        setCurrentPage(1);
+    };
 
     useEffect(() => {
         async function fetchCategories() {
@@ -42,11 +54,18 @@ export default function CardStoryPreview() {
         async function fetchStories() {
             try {
                 setIsLoading(true);
-                const params: any = {};
+                const params: any = {
+                    limit: 12,
+                    page: currentPage
+                };
                 if (debouncedSearch) params.search = debouncedSearch;
                 if (selectedCategoryId) params.category_id = parseInt(selectedCategoryId);
 
                 const response = await api.stories.getList(params);
+
+                if (response.meta) {
+                    setMeta(response.meta);
+                }
 
                 const transformedStories: StoryCardData[] = response.data.map((story: Story) => {
                     let contentPreview = "";
@@ -85,7 +104,7 @@ export default function CardStoryPreview() {
         }
 
         fetchStories();
-    }, [api, debouncedSearch, selectedCategoryId]);
+    }, [api, debouncedSearch, selectedCategoryId, currentPage]);
 
     if (error) {
         return (
@@ -94,7 +113,7 @@ export default function CardStoryPreview() {
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                     selectedCategory={selectedCategoryId}
-                    setSelectedCategory={setSelectedCategoryId}
+                    setSelectedCategory={handleCategoryChange}
                     categories={categories}
                 />
                 <div className="rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
@@ -110,7 +129,7 @@ export default function CardStoryPreview() {
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 selectedCategory={selectedCategoryId}
-                setSelectedCategory={setSelectedCategoryId}
+                setSelectedCategory={handleCategoryChange}
                 categories={categories}
             />
 
@@ -125,11 +144,41 @@ export default function CardStoryPreview() {
                     No stories found
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {stories.map((story) => (
-                        <StoryCard key={story.id} story={story} />
-                    ))}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {stories.map((story) => (
+                            <StoryCard key={story.id} story={story} />
+                        ))}
+                    </div>
+
+                    {meta && meta.pagination.last_page > 1 && (
+                        <div className="flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-700 mb-4">
+                            <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                                Page {meta.pagination.current_page} of {meta.pagination.last_page}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1 || isLoading}
+                                >
+                                    <ChevronLeft className="mr-1 h-4 w-4" />
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage((p) => p + 1)}
+                                    disabled={currentPage >= meta.pagination.last_page || isLoading}
+                                >
+                                    Next
+                                    <ChevronRight className="ml-1 h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
