@@ -1,97 +1,136 @@
 "use client";
-import { useState } from "react";
-import HoloCard from "@/components/ui/holo-card";
+import { useEffect, useState, useCallback } from "react";
+import { StoryCard, type StoryCardData } from "@/components/cards/story/StoryCard";
 import FilterStory from "@/components/filters/story/filterStory";
-
-type Item = {
-    id: string;
-    title: string;
-    category: string;
-    location: string;
-    flag: string;
-    status: "Active" | "Inactive" | "Pending";
-    balance: number;
-};
+import { useApi } from "@/lib/api/ApiProvider";
+import type { Story, Category } from "@/repositories";
 
 export default function CardStoryPreview() {
-    return (
-        <div className="space-y-4">
-            <FilterStory />
-            <div className="flex flex-wrap gap-4">
-                <HoloCard
-                    data={{
-                        name: "Invincible",
-                        subtitle: "Im Invincible",
-                        description: "A really great story",
-                        primaryId: "1",
-                        secondaryInfo: "Rizal",
-                        backgroundImage: "https://i.pinimg.com/1200x/27/0a/74/270a74bdc412f9eeae4d2403ebc9bd63.jpg",
-                        badge: "Fantasy",
-                        overlayOpacity: 100,
-                    }}
+    const api = useApi();
+    const [stories, setStories] = useState<StoryCardData[]>([]);
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+    const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchQuery]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const response = await api.categories.getList({ per_page: 100 });
+                setCategories(response.data.map(cat => ({ id: cat.id, name: cat.name })));
+            } catch (err) {
+                console.error("Failed to fetch categories", err);
+            }
+        }
+        fetchCategories();
+    }, [api]);
+
+    useEffect(() => {
+        async function fetchStories() {
+            try {
+                setIsLoading(true);
+                const params: any = {};
+                if (debouncedSearch) params.search = debouncedSearch;
+                if (selectedCategoryId) params.category_id = parseInt(selectedCategoryId);
+
+                const response = await api.stories.getList(params);
+
+                const transformedStories: StoryCardData[] = response.data.map((story: Story) => {
+                    let contentPreview = "";
+                    if (story.content_preview) {
+                        contentPreview = story.content_preview;
+                    } else if (story.content && typeof story.content === 'string') {
+                        contentPreview = story.content.substring(0, 150) + (story.content.length > 150 ? "..." : "");
+                    }
+
+                    return {
+                        id: story.id,
+                        slug: story.slug,
+                        title: story.title,
+                        coverImage: story.cover_image || null,
+                        contentPreview,
+                        createdAt: story.created_at,
+                        author: {
+                            id: story.author.id,
+                            name: story.author.name,
+                            avatar: story.author.profile_image || null,
+                        },
+                        category: story.category ? {
+                            id: story.category.id,
+                            name: story.category.name,
+                            slug: story.category.slug,
+                        } : undefined,
+                    };
+                });
+
+                setStories(transformedStories);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to fetch stories");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchStories();
+    }, [api, debouncedSearch, selectedCategoryId]);
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <FilterStory
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedCategory={selectedCategoryId}
+                    setSelectedCategory={setSelectedCategoryId}
+                    categories={categories}
                 />
-                {/* 
-                <HoloCard
-                data={{
-                    name: "Invincible",
-                    subtitle: "Im Invincible",
-                    description: "A really great story",
-                    primaryId: "1",
-                    secondaryInfo: "glistening",
-                    backgroundImage: "https://i.pinimg.com/1200x/27/0a/74/270a74bdc412f9eeae4d2403ebc9bd63.jpg",
-                    badge: "Fantasy",
-                    overlayOpacity: 100,
-                }}
-            />
-            <HoloCard
-                data={{
-                    name: "Invincible",
-                    subtitle: "Im Invincible",
-                    description: "A really great story",
-                    primaryId: "1",
-                    secondaryInfo: "glistening",
-                    backgroundImage: "https://i.pinimg.com/1200x/27/0a/74/270a74bdc412f9eeae4d2403ebc9bd63.jpg",
-                    badge: "Fantasy",
-                    overlayOpacity: 100,
-                }}
-            />
-            <HoloCard
-                data={{
-                    name: "Invincible",
-                    subtitle: "Im Invincible",
-                    description: "A really great story",
-                    primaryId: "1",
-                    secondaryInfo: "glistening",
-                    backgroundImage: "https://i.pinimg.com/1200x/27/0a/74/270a74bdc412f9eeae4d2403ebc9bd63.jpg",
-                    badge: "Fantasy",
-                    overlayOpacity: 100,
-                }}
-            />
-            <HoloCard
-                data={{
-                    name: "Invincible",
-                    subtitle: "Im Invincible",
-                    description: "A really great story",
-                    primaryId: "1",
-                    secondaryInfo: "glistening",
-                    backgroundImage: "https://i.pinimg.com/1200x/27/0a/74/270a74bdc412f9eeae4d2403ebc9bd63.jpg",
-                    badge: "Fantasy",
-                    overlayOpacity: 100,
-                }}
-            />
-            <HoloCard
-                data={{
-                    name: "Invincible",
-                    subtitle: "Im Invincible",
-                    description: "A really great story",
-                    primaryId: "1",
-                    secondaryInfo: "glistening",
-                    backgroundImage: "https://i.pinimg.com/1200x/27/0a/74/270a74bdc412f9eeae4d2403ebc9bd63.jpg",
-                    badge: "Fantasy",
-                    overlayOpacity: 100,
-                }}
-            /> */}
+                <div className="rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                    {error}
+                </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <FilterStory
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                selectedCategory={selectedCategoryId}
+                setSelectedCategory={setSelectedCategoryId}
+                categories={categories}
+            />
+
+            {isLoading ? (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-200 dark:bg-neutral-700" />
+                    ))}
+                </div>
+            ) : stories.length === 0 ? (
+                <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
+                    No stories found
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {stories.map((story) => (
+                        <StoryCard key={story.id} story={story} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
