@@ -75,7 +75,7 @@ export default function StoryDetailPage() {
     });
 
     return (
-        <div className="mx-auto max-w-7xl pb-10">
+        <div className="mx-auto pb-10">
             <div className="mb-6 flex items-center justify-between">
                 <Link
                     href="/stories"
@@ -117,13 +117,6 @@ export default function StoryDetailPage() {
                         <IconCategory className="h-4 w-4" />
                         <span>{story.category.name}</span>
                     </div>
-
-                    <span className={`rounded-full px-3 py-1 font-medium ${story.status === 'published'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        }`}>
-                        {story.status}
-                    </span>
                 </div>
             </div>
 
