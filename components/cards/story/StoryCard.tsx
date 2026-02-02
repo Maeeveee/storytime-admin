@@ -75,7 +75,7 @@ export function StoryCard({ story }: StoryCardProps) {
 
                         <Link
                             href={`/stories/${story.slug}`}
-                            className="relative z-10 block cursor-pointer rounded-lg bg-black px-6 py-2 text-xs font-bold text-white"
+                            className="relative z-10 block rounded-lg bg-black px-6 py-2 text-xs font-bold text-white cursor-none"
                         >
                             Read more
                         </Link>
