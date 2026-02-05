@@ -23,11 +23,11 @@ export const description = "A multiple bar chart"
 
 const chartConfig = {
   users: {
-    label: "Users",
+    label: "New Users",
     color: "var(--chart-1)",
   },
   stories: {
-    label: "Stories",
+    label: "New Stories",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig
