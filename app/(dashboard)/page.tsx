@@ -5,7 +5,7 @@ import { TableDashboardTopAuthor } from "@/components/tables/dashboard/tableDash
 import { ChartDashboardGrowth } from "@/components/charts/dashboard/chartDashboardGrowth";
 import { BookOpenText } from "lucide-react";
 import { useApi } from "@/lib/api/ApiProvider";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Category, Story } from "@/repositories";
 
 
@@ -13,23 +13,58 @@ export default function DashboardPage() {
     const api = useApi();
     const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [stories, setStories] = useState<Story[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [totalStories, setTotalStories] = useState(0)
     const [totalCategories, setTotalCategories] = useState(0)
     const [totalUsers, setTotalUsers] = useState(0)
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+
+    const growthData = React.useMemo(() => {
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const currentDate = new Date();
+        const last12Months: { month: string; year: number; monthIndex: number; users: number; stories: number }[] = [];
+        for (let i = 11; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            last12Months.push({
+                month: months[date.getMonth()],
+                year: date.getFullYear(),
+                monthIndex: date.getMonth(),
+                users: 0,
+                stories: 0
+            });
+        }
+
+        stories.forEach(story => {
+            const date = new Date(story.created_at);
+            const monthData = last12Months.find(m => m.monthIndex === date.getMonth() && m.year === date.getFullYear());
+            if (monthData) {
+                monthData.stories++;
+            }
+        });
+
+        users.forEach(user => {
+            const date = new Date(user.created_at);
+            const monthData = last12Months.find(m => m.monthIndex === date.getMonth() && m.year === date.getFullYear());
+            if (monthData) {
+                monthData.users++;
+            }
+        });
+
+        return last12Months;
+    }, [stories, users]);
 
     useEffect(() => {
         async function fetchCategories() {
             try {
-                setIsLoading(true)
-                const response = await api.categories.getList()
+                const response = await api.categories.getList({ limit: 10000 })
                 setCategories(response.data.map(cat => ({ id: cat.id, name: cat.name })));
                 setTotalCategories(response.meta.pagination.total)
             } catch (err) {
                 console.error("Failed to fetch categories", err);
-            } finally {
-                setIsLoading(false)
             }
         }
         fetchCategories();
@@ -38,14 +73,11 @@ export default function DashboardPage() {
     useEffect(() => {
         async function fetchStories() {
             try {
-                setIsLoading(true)
-                const response = await api.stories.getList()
+                const response = await api.stories.getList({ limit: 10000 })
                 setStories(response.data)
                 setTotalStories(response.meta.pagination.total)
             } catch (err) {
                 console.error("Failed to fetch stories", err);
-            } finally {
-                setIsLoading(false)
             }
         }
         fetchStories();
@@ -54,25 +86,16 @@ export default function DashboardPage() {
     useEffect(() => {
         async function fetchUser() {
             try {
-                setIsLoading(true)
-                const response = await api.users.getList()
+                const response = await api.users.getList({ limit: 10000 })
+                setUsers(response.data)
                 setTotalUsers(response.meta.pagination.total)
             } catch (err) {
                 console.error("Failed to fetch users", err);
-            } finally {
-                setIsLoading(false)
             }
         }
         fetchUser();
     }, [api]);
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="animate-pulse rounded-full h-32 w-32 border-2 border-primary"></div>
-            </div>
-        )
-    }
     return (
         <>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mb-3">
@@ -94,7 +117,7 @@ export default function DashboardPage() {
                 <TableDashboardTopAuthor />
             </div>
             <div className="w-full">
-                <ChartDashboardGrowth />
+                <ChartDashboardGrowth data={growthData} />
             </div>
         </>
     );

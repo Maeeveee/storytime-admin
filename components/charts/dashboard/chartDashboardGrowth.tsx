@@ -20,42 +20,30 @@ import {
 
 export const description = "A multiple bar chart"
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-  { month: "July", desktop: 186, mobile: 80 },
-  { month: "August", desktop: 305, mobile: 200 },
-  { month: "September", desktop: 237, mobile: 120 },
-  { month: "October", desktop: 73, mobile: 190 },
-  { month: "November", desktop: 209, mobile: 130 },
-  { month: "December", desktop: 214, mobile: 140 },
-]
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  users: {
+    label: "Users",
     color: "var(--chart-1)",
   },
-  mobile: {
-    label: "Mobile",
+  stories: {
+    label: "Stories",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
-export function ChartDashboardGrowth() {
+export function ChartDashboardGrowth({ data }: { data?: { month: string; users: number; stories: number }[] }) {
+  const displayData = data || []
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Growth</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Platform Growth</CardTitle>
+        <CardDescription>New Users vs New Stories</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
-          <BarChart accessibilityLayer data={chartData}>
+          <BarChart accessibilityLayer data={displayData}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="month"
@@ -68,14 +56,14 @@ export function ChartDashboardGrowth() {
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="desktop" fill="var(--color-desktop)"barSize={20} radius={2} />
-            <Bar dataKey="mobile" fill="var(--color-mobile)"barSize={20} radius={2} />
+            <Bar dataKey="users" fill="var(--color-users)" barSize={20} radius={2} />
+            <Bar dataKey="stories" fill="var(--color-stories)" barSize={20} radius={2} />
           </BarChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          Tracking monthly platform activity <TrendingUp className="h-4 w-4" />
         </div>
       </CardFooter>
     </Card>
