@@ -77,7 +77,7 @@ export default function StoryDetailPage() {
     });
 
     return (
-        <div className="mx-auto pb-10">
+        <div className="mx-auto max-w-7xl pb-10">
             <div className="mb-6 flex items-center justify-between">
                 <Link
                     href="/stories">
