@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar, SidebarBody, SidebarLink, useSidebar } from "@/components/ui/sidebar";
 import {
     IconBookFilled,
@@ -13,6 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimatePresence, motion } from "motion/react";
+
+
 
 interface SidebarLayoutProps {
     children: React.ReactNode;
@@ -113,6 +115,7 @@ interface UserMenuProps {
 function UserMenu({ userName, userAvatar, onLogout }: UserMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const { open: sidebarOpen } = useSidebar();
+    const router = useRouter();
 
     return (
         <div className="relative">
@@ -159,6 +162,16 @@ function UserMenu({ userName, userAvatar, onLogout }: UserMenuProps) {
                         >
                             <IconLogout className="h-4 w-4" />
                             <span>Logout</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsOpen(false);
+                                router.push("/profile");
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                        >
+                            <IconUserFilled className="h-4 w-4" />
+                            <span>Profile</span>
                         </button>
                     </motion.div>
                 )}
