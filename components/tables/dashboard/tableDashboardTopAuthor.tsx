@@ -24,10 +24,10 @@ export function TableDashboardTopAuthor() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Project</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Team</TableHead>
-                        <TableHead className="text-right">Budget</TableHead>
+                        <TableHead>Author</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Total Stories</TableHead>
+                        <TableHead>Total Categories</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -43,7 +43,7 @@ export function TableDashboardTopAuthor() {
                             </Badge>
                         </TableCell>
                         <TableCell>Frontend Team</TableCell>
-                        <TableCell className="text-right">$12,500</TableCell>
+                        <TableCell>$12,500</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell className="font-medium">Mobile App</TableCell>
@@ -57,7 +57,7 @@ export function TableDashboardTopAuthor() {
                             </Badge>
                         </TableCell>
                         <TableCell>Mobile Team</TableCell>
-                        <TableCell className="text-right">$8,750</TableCell>
+                        <TableCell>$8,750</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell className="font-medium">API Integration</TableCell>
@@ -71,7 +71,7 @@ export function TableDashboardTopAuthor() {
                             </Badge>
                         </TableCell>
                         <TableCell>Backend Team</TableCell>
-                        <TableCell className="text-right">$5,200</TableCell>
+                        <TableCell>$5,200</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell className="font-medium">Database Migration</TableCell>
@@ -85,7 +85,7 @@ export function TableDashboardTopAuthor() {
                             </Badge>
                         </TableCell>
                         <TableCell>DevOps Team</TableCell>
-                        <TableCell className="text-right">$3,800</TableCell>
+                        <TableCell>$3,800</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell className="font-medium">User Dashboard</TableCell>
@@ -99,7 +99,7 @@ export function TableDashboardTopAuthor() {
                             </Badge>
                         </TableCell>
                         <TableCell>UX Team</TableCell>
-                        <TableCell className="text-right">$7,200</TableCell>
+                        <TableCell>$7,200</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
