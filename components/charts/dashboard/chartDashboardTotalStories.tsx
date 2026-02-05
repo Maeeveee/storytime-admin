@@ -21,57 +21,59 @@ import {
     type ChartConfig,
 } from "@/components/ui/chart"
 
-export const description = "A donut chart with text"
+const palette = [
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+];
 
-const chartData = [
-    { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-    { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-    { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
-    { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-    { browser: "other", visitors: 190, fill: "var(--color-other)" },
-]
+export function ChartPieDonutText({
+    data
+}: {
+    data: { name: string; value: number }[]
+}) {
+    const totalStories = React.useMemo(() => {
+        return data.reduce((acc, curr) => acc + curr.value, 0)
+    }, [data])
 
-const chartConfig = {
-    visitors: {
-        label: "Visitors",
-    },
-    chrome: {
-        label: "Chrome",
-        color: "var(--chart-1)",
-    },
-    safari: {
-        label: "Safari",
-        color: "var(--chart-2)",
-    },
-    firefox: {
-        label: "Firefox",
-        color: "var(--chart-3)",
-    },
-    edge: {
-        label: "Edge",
-        color: "var(--chart-4)",
-    },
-    other: {
-        label: "Other",
-        color: "var(--chart-5)",
-    },
-} satisfies ChartConfig
+    const chartData = React.useMemo(() => {
+        return data.map((item, index) => ({
+            category: item.name,
+            stories: item.value,
+            fill: palette[index % palette.length],
+        }))
+    }, [data])
 
-export function ChartPieDonutText() {
-    const totalVisitors = React.useMemo(() => {
-        return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
-    }, [])
+    const chartConfig = React.useMemo(() => {
+        const config: ChartConfig = {
+            stories: {
+                label: "Stories",
+            },
+        }
+        data.forEach((item, index) => {
+            config[item.name] = {
+                label: item.name,
+                color: palette[index % palette.length],
+            }
+        })
+        return config
+    }, [data])
 
     return (
         <Card className="flex flex-col">
             <CardHeader className="items-center pb-0">
-                <CardTitle>Total Stories</CardTitle>
-                <CardDescription>January - June 2024</CardDescription>
+                <CardTitle className="flex justify-between w-full">
+                    <span>Total Stories by Category</span>
+                    <span className="text-right">Total Stories: {totalStories}</span>
+                </CardTitle>
+                <CardDescription>Distribution of stories</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 <ChartContainer
                     config={chartConfig}
-                    className="mx-auto aspect-square max-h-62"
+                    className="mx-auto aspect-square max-h-[250px]"
                 >
                     <PieChart>
                         <ChartTooltip
@@ -80,8 +82,8 @@ export function ChartPieDonutText() {
                         />
                         <Pie
                             data={chartData}
-                            dataKey="visitors"
-                            nameKey="browser"
+                            dataKey="stories"
+                            nameKey="category"
                             innerRadius={60}
                             strokeWidth={5}
                         >
@@ -100,14 +102,14 @@ export function ChartPieDonutText() {
                                                     y={viewBox.cy}
                                                     className="fill-foreground text-3xl font-bold"
                                                 >
-                                                    {totalVisitors.toLocaleString()}
+                                                    {totalStories.toLocaleString()}
                                                 </tspan>
                                                 <tspan
                                                     x={viewBox.cx}
                                                     y={(viewBox.cy || 0) + 24}
                                                     className="fill-muted-foreground"
                                                 >
-                                                    Visitors
+                                                    Stories
                                                 </tspan>
                                             </text>
                                         )
@@ -115,10 +117,10 @@ export function ChartPieDonutText() {
                                 }}
                             />
                         </Pie>
-                    <ChartLegend
-                        content={<ChartLegendContent nameKey="browser" />}
-                        className="-translate-y-2 flex-wrap gap-2 *:basis-1/4 *:justify-center"
-                    />
+                        <ChartLegend
+                            content={<ChartLegendContent nameKey="category" />}
+                            className="-translate-y-2 flex-wrap gap-2 items-center justify-center"
+                        />
                     </PieChart>
                 </ChartContainer>
             </CardContent>

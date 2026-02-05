@@ -81,7 +81,16 @@ export default function DashboardPage() {
                 <CardDashbordStats title="Total Users" content={totalUsers.toString()} icon={<BookOpenText />} />
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2 mb-3">
-                <ChartPieDonutText />
+                <ChartPieDonutText data={stories.reduce((acc, story) => {
+                    const categoryName = story.category?.name || "Uncategorized";
+                    const existingCategory = acc.find(item => item.name === categoryName);
+                    if (existingCategory) {
+                        existingCategory.value += 1;
+                    } else {
+                        acc.push({ name: categoryName, value: 1 });
+                    }
+                    return acc;
+                }, [] as { name: string; value: number }[])} />
                 <TableDashboardTopAuthor />
             </div>
             <div className="w-full">
