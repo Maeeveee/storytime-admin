@@ -84,30 +84,31 @@ import {
   TableRow
 } from "@/components/ui/table";
 
-type Item = {
+type User = {
   id: string;
   name: string;
   email: string;
-  location: string;
-  flag: string;
-  status: "Active" | "Inactive" | "Pending";
-  balance: number;
+  about?: string;
+  created_at?: string;
 };
 
-// Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
+interface TableUserListProps {
+  data: User[];
+}
+
+const multiColumnFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
   const searchableRowContent = `${row.original.name} ${row.original.email}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Item> = (row, columnId, filterValue: string[]) => {
+const statusFilterFn: FilterFn<User> = (row, columnId, filterValue: string[]) => {
   if (!filterValue?.length) return true;
   const status = row.getValue(columnId) as string;
   return filterValue.includes(status);
 };
 
-const columns: ColumnDef<Item>[] = [
+const columns: ColumnDef<User>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -150,7 +151,7 @@ const columns: ColumnDef<Item>[] = [
   },
   {
     header: "Joined at",
-    accessorKey: "joinedAt",
+    accessorKey: "created_at",
     size: 100,
     filterFn: statusFilterFn
   },
@@ -163,7 +164,7 @@ const columns: ColumnDef<Item>[] = [
   }
 ];
 
-export default function TableUserList() {
+export default function TableUserList({ data }: TableUserListProps) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -180,24 +181,8 @@ export default function TableUserList() {
     }
   ]);
 
-  const [data, setData] = useState<Item[]>([]);
-  useEffect(() => {
-    async function fetchPosts() {
-      const res = await fetch(
-        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-      );
-      const data = await res.json();
-      setData(data);
-    }
-    fetchPosts();
-  }, []);
-
   const handleDeleteRows = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const updatedData = data.filter(
-      (item) => !selectedRows.some((row) => row.original.id === item.id)
-    );
-    setData(updatedData);
     table.resetRowSelection();
   };
 
@@ -222,7 +207,6 @@ export default function TableUserList() {
     }
   });
 
-  // Get unique status values
   const uniqueStatusValues = useMemo(() => {
     const statusColumn = table.getColumn("status");
 
@@ -233,7 +217,6 @@ export default function TableUserList() {
     return values.sort();
   }, [table.getColumn("status")?.getFacetedUniqueValues()]);
 
-  // Get counts for each status
   const statusCounts = useMemo(() => {
     const statusColumn = table.getColumn("status");
     if (!statusColumn) return new Map();
@@ -263,10 +246,8 @@ export default function TableUserList() {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* Filter by name or email */}
           <div className="relative">
             <Input
               id={`${id}-input`}
@@ -298,7 +279,6 @@ export default function TableUserList() {
               </button>
             )}
           </div>
-          {/* Filter by status */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline">
@@ -336,7 +316,6 @@ export default function TableUserList() {
               </div>
             </PopoverContent>
           </Popover>
-          {/* Toggle columns visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -365,7 +344,6 @@ export default function TableUserList() {
           </DropdownMenu>
         </div>
         <div className="flex items-center gap-3">
-          {/* Delete button */}
           {table.getSelectedRowModel().rows.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -400,7 +378,6 @@ export default function TableUserList() {
               </AlertDialogContent>
             </AlertDialog>
           )}
-          {/* Add user button */}
           <Button className="ml-auto" variant="outline">
             <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
             Add user
@@ -408,7 +385,6 @@ export default function TableUserList() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-background overflow-hidden rounded-md border">
         <Table className="table-fixed">
           <TableHeader>
@@ -424,11 +400,10 @@ export default function TableUserList() {
                         <div
                           className={cn(
                             header.column.getCanSort() &&
-                              "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                            "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
                           )}
                           onClick={header.column.getToggleSortingHandler()}
                           onKeyDown={(e) => {
-                            // Enhanced keyboard handling for sorting
                             if (
                               header.column.getCanSort() &&
                               (e.key === "Enter" || e.key === " ")
@@ -487,9 +462,7 @@ export default function TableUserList() {
         </Table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between gap-8">
-        {/* Results per page */}
         <div className="flex items-center gap-3">
           <Label htmlFor={id} className="max-sm:sr-only">
             Rows per page
@@ -511,7 +484,6 @@ export default function TableUserList() {
             </SelectContent>
           </Select>
         </div>
-        {/* Page number information */}
         <div className="text-muted-foreground flex grow justify-end text-sm whitespace-nowrap">
           <p className="text-muted-foreground text-sm whitespace-nowrap" aria-live="polite">
             <span className="text-foreground">
@@ -519,7 +491,7 @@ export default function TableUserList() {
               {Math.min(
                 Math.max(
                   table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
-                    table.getState().pagination.pageSize,
+                  table.getState().pagination.pageSize,
                   0
                 ),
                 table.getRowCount()
@@ -529,11 +501,9 @@ export default function TableUserList() {
           </p>
         </div>
 
-        {/* Pagination buttons */}
         <div>
           <Pagination>
             <PaginationContent>
-              {/* First page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -545,7 +515,6 @@ export default function TableUserList() {
                   <ChevronFirstIcon size={16} aria-hidden="true" />
                 </Button>
               </PaginationItem>
-              {/* Previous page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -557,7 +526,6 @@ export default function TableUserList() {
                   <ChevronLeftIcon size={16} aria-hidden="true" />
                 </Button>
               </PaginationItem>
-              {/* Next page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -569,7 +537,6 @@ export default function TableUserList() {
                   <ChevronRightIcon size={16} aria-hidden="true" />
                 </Button>
               </PaginationItem>
-              {/* Last page button */}
               <PaginationItem>
                 <Button
                   size="icon"
@@ -589,7 +556,7 @@ export default function TableUserList() {
   );
 }
 
-function RowActions({ row }: { row: Row<Item> }) {
+function RowActions({ row }: { row: Row<User> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
