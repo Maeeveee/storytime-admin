@@ -152,6 +152,16 @@ const columns: ColumnDef<User>[] = [
   {
     header: "Joined at",
     accessorKey: "created_at",
+    cell: ({ row }) => {
+      const dateValue = row.getValue("created_at") as string;
+      if (!dateValue) return <div className="font-medium">-</div>;
+      const formattedDate = new Date(dateValue).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+      return <div className="font-medium">{formattedDate}</div>;
+    },
     size: 100,
     filterFn: statusFilterFn
   },
