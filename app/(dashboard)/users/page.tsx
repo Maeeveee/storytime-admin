@@ -11,6 +11,7 @@ export default function CreateUserPage() {
     useEffect(() => {
         async function fetchUser(){
             try {
+                setIsLoading(true)
                 const response = await api.users.getList()
                 setUsers(response.data)
             }catch(err){
@@ -23,9 +24,15 @@ export default function CreateUserPage() {
     }, [api])
     
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-6">User</h1>
-            <TableUserList data={users} />
-        </div>
+        isLoading ? (
+            <div className="flex items-center justify-center h-screen">
+                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
+            </div>
+        ) : (
+            <div>
+                <h1 className="text-2xl font-bold mb-6">User</h1>
+                <TableUserList data={users} />
+            </div>
+        )
     );
 }
