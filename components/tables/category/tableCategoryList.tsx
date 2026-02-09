@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
   FilterFn,
   flexRender,
   getCoreRowModel,
-  getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -28,7 +27,6 @@ import {
   CircleXIcon,
   Columns3Icon,
   EllipsisIcon,
-  FilterIcon,
   ListFilterIcon,
   PlusIcon,
   TrashIcon
@@ -46,7 +44,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -56,18 +53,13 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -83,31 +75,16 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { useApi } from "@/lib/api/ApiProvider";
+import { Category } from "@/repositories";
 
-type Item = {
-  id: string;
-  name: string;
-  email: string;
-  location: string;
-  flag: string;
-  status: "Active" | "Inactive" | "Pending";
-  balance: number;
-};
-
-// Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Item> = (row, columnId, filterValue) => {
-  const searchableRowContent = `${row.original.name} ${row.original.email}`.toLowerCase();
+const multiColumnFilterFn: FilterFn<Category> = (row, columnId, filterValue) => {
+  const searchableRowContent = `${row.original.name} ${row.original.description || ""}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const statusFilterFn: FilterFn<Item> = (row, columnId, filterValue: string[]) => {
-  if (!filterValue?.length) return true;
-  const status = row.getValue(columnId) as string;
-  return filterValue.includes(status);
-};
-
-const columns: ColumnDef<Item>[] = [
+const columns: ColumnDef<Category>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -131,7 +108,7 @@ const columns: ColumnDef<Item>[] = [
     enableHiding: false
   },
   {
-    header: "Category",
+    header: "Name",
     accessorKey: "name",
     cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
     size: 180,
@@ -139,48 +116,26 @@ const columns: ColumnDef<Item>[] = [
     enableHiding: false
   },
   {
-    header: "Desc",
-    accessorKey: "email",
-    size: 220
-  },
-  {
-    header: "Location",
-    accessorKey: "location",
-    cell: ({ row }) => (
-      <div>
-        <span className="text-lg leading-none">{row.original.flag}</span> {row.getValue("location")}
-      </div>
-    ),
+    header: "Slug",
+    accessorKey: "slug",
     size: 180
   },
   {
-    header: "Status",
-    accessorKey: "status",
-    cell: ({ row }) => (
-      <Badge
-        className={cn(
-          row.getValue("status") === "Inactive" && "bg-muted-foreground/60 text-primary-foreground"
-        )}>
-        {row.getValue("status")}
-      </Badge>
-    ),
-    size: 100,
-    filterFn: statusFilterFn
+    header: "Description",
+    accessorKey: "description",
+    cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("description") || "-"}</div>,
+    size: 300
   },
   {
-    header: "Performance",
-    accessorKey: "performance"
-  },
-  {
-    header: "Balance",
-    accessorKey: "balance",
+    header: "Created At",
+    accessorKey: "created_at",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("balance"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD"
-      }).format(amount);
-      return formatted;
+      const date = new Date(row.getValue("created_at"));
+      return date.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
     },
     size: 120
   },
@@ -195,6 +150,7 @@ const columns: ColumnDef<Item>[] = [
 
 export default function TableCategoryList() {
   const id = useId();
+  const api = useApi();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
@@ -210,25 +166,36 @@ export default function TableCategoryList() {
     }
   ]);
 
-  const [data, setData] = useState<Item[]>([]);
-  useEffect(() => {
-    async function fetchPosts() {
-      const res = await fetch(
-        "https://raw.githubusercontent.com/origin-space/origin-images/refs/heads/main/users-01_fertyx.json"
-      );
-      const data = await res.json();
-      setData(data);
-    }
-    fetchPosts();
-  }, []);
+  const [data, setData] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleDeleteRows = () => {
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        setIsLoading(true);
+        const response = await api.categories.getList({ limit: 10000 });
+        setData(response.data);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCategories();
+  }, [api]);
+
+  const handleDeleteRows = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const updatedData = data.filter(
-      (item) => !selectedRows.some((row) => row.original.id === item.id)
-    );
-    setData(updatedData);
-    table.resetRowSelection();
+    try {
+      await Promise.all(selectedRows.map((row) => api.categories.delete(row.original.id)));
+      const updatedData = data.filter(
+        (item) => !selectedRows.some((row) => row.original.id === item.id)
+      );
+      setData(updatedData);
+      table.resetRowSelection();
+    } catch (err) {
+      console.error("Failed to delete categories", err);
+    }
   };
 
   const table = useReactTable({
@@ -243,7 +210,6 @@ export default function TableCategoryList() {
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getFilteredRowModel: getFilteredRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
     state: {
       sorting,
       pagination,
@@ -252,51 +218,12 @@ export default function TableCategoryList() {
     }
   });
 
-  // Get unique status values
-  const uniqueStatusValues = useMemo(() => {
-    const statusColumn = table.getColumn("status");
-
-    if (!statusColumn) return [];
-
-    const values = Array.from(statusColumn.getFacetedUniqueValues().keys());
-
-    return values.sort();
-  }, [table.getColumn("status")?.getFacetedUniqueValues()]);
-
-  // Get counts for each status
-  const statusCounts = useMemo(() => {
-    const statusColumn = table.getColumn("status");
-    if (!statusColumn) return new Map();
-    return statusColumn.getFacetedUniqueValues();
-  }, [table.getColumn("status")?.getFacetedUniqueValues()]);
-
-  const selectedStatuses = useMemo(() => {
-    const filterValue = table.getColumn("status")?.getFilterValue() as string[];
-    return filterValue ?? [];
-  }, [table.getColumn("status")?.getFilterValue()]);
-
-  const handleStatusChange = (checked: boolean, value: string) => {
-    const filterValue = table.getColumn("status")?.getFilterValue() as string[];
-    const newFilterValue = filterValue ? [...filterValue] : [];
-
-    if (checked) {
-      newFilterValue.push(value);
-    } else {
-      const index = newFilterValue.indexOf(value);
-      if (index > -1) {
-        newFilterValue.splice(index, 1);
-      }
-    }
-
-    table.getColumn("status")?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
-  };
-
   return (
     <div className="space-y-4">
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* Filter by name or email */}
+          {/* Filter by name */}
           <div className="relative">
             <Input
               id={`${id}-input`}
@@ -307,9 +234,9 @@ export default function TableCategoryList() {
               )}
               value={(table.getColumn("name")?.getFilterValue() ?? "") as string}
               onChange={(e) => table.getColumn("name")?.setFilterValue(e.target.value)}
-              placeholder="Filter by name or email..."
+              placeholder="Filter by name..."
               type="text"
-              aria-label="Filter by name or email"
+              aria-label="Filter by name"
             />
             <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
               <ListFilterIcon size={16} aria-hidden="true" />
@@ -328,44 +255,6 @@ export default function TableCategoryList() {
               </button>
             )}
           </div>
-          {/* Filter by status */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <FilterIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-                Status
-                {selectedStatuses.length > 0 && (
-                  <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
-                    {selectedStatuses.length}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto min-w-36 p-3" align="start">
-              <div className="space-y-3">
-                <div className="text-muted-foreground text-xs font-medium">Filters</div>
-                <div className="space-y-3">
-                  {uniqueStatusValues.map((value, i) => (
-                    <div key={value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`${id}-${i}`}
-                        checked={selectedStatuses.includes(value)}
-                        onCheckedChange={(checked: boolean) => handleStatusChange(checked, value)}
-                      />
-                      <Label
-                        htmlFor={`${id}-${i}`}
-                        className="flex grow justify-between gap-2 font-normal">
-                        {value}{" "}
-                        <span className="text-muted-foreground ms-2 text-xs">
-                          {statusCounts.get(value)}
-                        </span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
           {/* Toggle columns visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -419,7 +308,7 @@ export default function TableCategoryList() {
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete{" "}
                       {table.getSelectedRowModel().rows.length} selected{" "}
-                      {table.getSelectedRowModel().rows.length === 1 ? "row" : "rows"}.
+                      {table.getSelectedRowModel().rows.length === 1 ? "category" : "categories"}.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>
@@ -430,10 +319,10 @@ export default function TableCategoryList() {
               </AlertDialogContent>
             </AlertDialog>
           )}
-          {/* Add user button */}
+          {/* Add category button */}
           <Button className="ml-auto" variant="outline">
             <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-            Add user
+            Add Category
           </Button>
         </div>
       </div>
@@ -454,11 +343,10 @@ export default function TableCategoryList() {
                         <div
                           className={cn(
                             header.column.getCanSort() &&
-                              "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                            "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
                           )}
                           onClick={header.column.getToggleSortingHandler()}
                           onKeyDown={(e) => {
-                            // Enhanced keyboard handling for sorting
                             if (
                               header.column.getCanSort() &&
                               (e.key === "Enter" || e.key === " ")
@@ -496,7 +384,13 @@ export default function TableCategoryList() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
@@ -549,7 +443,7 @@ export default function TableCategoryList() {
               {Math.min(
                 Math.max(
                   table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
-                    table.getState().pagination.pageSize,
+                  table.getState().pagination.pageSize,
                   0
                 ),
                 table.getRowCount()
@@ -619,7 +513,7 @@ export default function TableCategoryList() {
   );
 }
 
-function RowActions({ row }: { row: Row<Item> }) {
+function RowActions({ row }: { row: Row<Category> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -635,33 +529,6 @@ function RowActions({ row }: { row: Row<Item> }) {
             <span>Edit</span>
             <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <span>Duplicate</span>
-            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <span>Archive</span>
-            <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>Move to project</DropdownMenuItem>
-                <DropdownMenuItem>Move to folder</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Advanced options</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Share</DropdownMenuItem>
-          <DropdownMenuItem>Add to favorites</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-destructive focus:text-destructive">
