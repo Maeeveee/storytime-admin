@@ -15,7 +15,31 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 
+import { useState, useEffect } from "react"
+import { useApi } from "@/lib/api/ApiProvider";
+import { Loader2 } from "lucide-react";
+
 export function TableDashboardTopAuthor() {
+    const api = useApi()
+    const [users, setUsers] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setIsLoading(true)
+                const response = await api.users.getList({limit: 5})
+                setUsers(response.data)
+            }catch (err){
+                console.error("Failed to fetch users", err)
+            }finally{
+                setIsLoading(false)
+            }
+        }
+        fetchUsers()
+    }, [api])
+
+
     return (
         <Card>
             <CardHeader>
@@ -31,76 +55,22 @@ export function TableDashboardTopAuthor() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow>
-                        <TableCell className="font-medium">Website Redesign</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">
-                                <span
-                                    aria-hidden="true"
-                                    className="size-1.5 rounded-full bg-emerald-500"
-                                />
-                                Paid
-                            </Badge>
-                        </TableCell>
-                        <TableCell>Frontend Team</TableCell>
-                        <TableCell>$12,500</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className="font-medium">Mobile App</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">
-                                <span
-                                    aria-hidden="true"
-                                    className="size-1.5 rounded-full bg-muted-foreground/64"
-                                />
-                                Unpaid
-                            </Badge>
-                        </TableCell>
-                        <TableCell>Mobile Team</TableCell>
-                        <TableCell>$8,750</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className="font-medium">API Integration</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">
-                                <span
-                                    aria-hidden="true"
-                                    className="size-1.5 rounded-full bg-amber-500"
-                                />
-                                Pending
-                            </Badge>
-                        </TableCell>
-                        <TableCell>Backend Team</TableCell>
-                        <TableCell>$5,200</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className="font-medium">Database Migration</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">
-                                <span
-                                    aria-hidden="true"
-                                    className="size-1.5 rounded-full bg-emerald-500"
-                                />
-                                Paid
-                            </Badge>
-                        </TableCell>
-                        <TableCell>DevOps Team</TableCell>
-                        <TableCell>$3,800</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className="font-medium">User Dashboard</TableCell>
-                        <TableCell>
-                            <Badge variant="outline">
-                                <span
-                                    aria-hidden="true"
-                                    className="size-1.5 rounded-full bg-emerald-500"
-                                />
-                                Paid
-                            </Badge>
-                        </TableCell>
-                        <TableCell>UX Team</TableCell>
-                        <TableCell>$7,200</TableCell>
-                    </TableRow>
+                   {isLoading ? (
+                        <TableRow>
+                            <TableCell colSpan={4} className="h-24 text-center">
+                                <Loader2 className="animate-spin" />
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        users.map((user) => (
+                            <TableRow key={user.id}>
+                                <TableCell>{user.name}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>{user.stories_count}</TableCell>
+                                <TableCell>{user.categories_count}</TableCell>
+                            </TableRow>
+                        ))
+                    )}
                 </TableBody>
             </Table>
         </Card>
