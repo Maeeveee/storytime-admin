@@ -124,6 +124,7 @@ export interface StoryListParams {
     search?: string
     category_id?: number
     author_id?: number
+    limit?: number
     status?: 'draft' | 'published'
     sort_by?: 'created_at' | 'title' | 'updated_at'
     sort_order?: 'asc' | 'desc'
@@ -156,6 +157,7 @@ export interface CategoryListParams {
     page?: number
     per_page?: number
     search?: string
+    limit?: number
 }
 
 // ============================================
@@ -166,6 +168,7 @@ export interface UserListParams {
     page?: number
     per_page?: number
     search?: string
+    limit?: number
     sort_by?: 'created_at' | 'name' | 'email'
     sort_order?: 'asc' | 'desc'
 }
