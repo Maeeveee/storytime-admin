@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import {
     Avatar,
     AvatarFallback,
@@ -8,7 +7,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -22,7 +20,7 @@ import {
 
 import { Loader2 } from "lucide-react";
 
-export function TableDashboardTopAuthor({ data }: { data?:{ id: number; name: string; email: string; profile_image: string | undefined; stories_count: number; categories_count: number }[] }) {
+export function TableDashboardTopAuthor({ data }: { data?: { id: number; name: string; email: string; profile_image: string | undefined; stories_count: number; categories_count: number }[] }) {
     const displayedData = data?.slice(0, 5) || [];
     return (
         <Card>
@@ -39,10 +37,12 @@ export function TableDashboardTopAuthor({ data }: { data?:{ id: number; name: st
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                   {displayedData.length === 0 ? (
+                    {displayedData.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={4} className="h-24 text-center">
-                                <Loader2 className="animate-spin" />
+                            <TableCell colSpan={4} className="h-24">
+                                <div className="flex items-center justify-center">
+                                    <Loader2 className="animate-spin" />
+                                </div>
                             </TableCell>
                         </TableRow>
                     ) : (
