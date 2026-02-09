@@ -6,7 +6,7 @@ import { ChartDashboardGrowth } from "@/components/charts/dashboard/chartDashboa
 import { BookOpenText } from "lucide-react";
 import { useApi } from "@/lib/api/ApiProvider";
 import React, { useState, useEffect } from "react";
-import { Category, Story } from "@/repositories";
+import { Story } from "@/repositories";
 
 
 export default function DashboardPage() {
@@ -56,6 +56,45 @@ export default function DashboardPage() {
 
         return last12Months;
     }, [stories, users]);
+
+    const topAuthor = React.useMemo(() => {
+        const authorMap = new Map<number, {
+            id: number;
+            name: string;
+            email: string;
+            profile_image: string | undefined;
+            stories_count: number;
+            categories_count: Set<number>;
+        }>();
+
+        stories.forEach(story => {
+            const author = story.author;
+            if (!authorMap.has(author.id)) {
+                const userWithEmail = users.find(u => u.id === author.id);
+                authorMap.set(author.id, {
+                    id: author.id,
+                    name: author.name,
+                    profile_image: author.profile_image,
+                    email: userWithEmail?.email || '',
+                    stories_count: 0,
+                    categories_count: new Set()
+                });
+            }
+            const authorData = authorMap.get(author.id)!;
+            authorData.stories_count++;
+            if (story.category?.id) {
+                authorData.categories_count.add(story.category.id);
+            }
+        });
+
+        return Array.from(authorMap.values())
+            .map(a => ({
+                ...a,
+                categories_count: a.categories_count.size
+            }))
+            .sort((a, b) => b.stories_count - a.stories_count)
+            .slice(0, 5);
+    }, [stories, users])
 
     useEffect(() => {
         async function fetchCategories() {
@@ -114,7 +153,7 @@ export default function DashboardPage() {
                     }
                     return acc;
                 }, [] as { name: string; value: number }[])} />
-                <TableDashboardTopAuthor />
+                <TableDashboardTopAuthor data={topAuthor} />
             </div>
             <div className="w-full">
                 <ChartDashboardGrowth data={growthData} />

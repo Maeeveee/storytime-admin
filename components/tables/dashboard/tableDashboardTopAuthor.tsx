@@ -1,5 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from "@/components/ui/avatar"
+import {
     Table,
     TableBody,
     TableCell,
@@ -15,31 +20,10 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 
-import { useState, useEffect } from "react"
-import { useApi } from "@/lib/api/ApiProvider";
 import { Loader2 } from "lucide-react";
 
-export function TableDashboardTopAuthor() {
-    const api = useApi()
-    const [users, setUsers] = useState<any[]>([])
-    const [isLoading, setIsLoading] = useState(false)
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                setIsLoading(true)
-                const response = await api.users.getList({limit: 5})
-                setUsers(response.data)
-            }catch (err){
-                console.error("Failed to fetch users", err)
-            }finally{
-                setIsLoading(false)
-            }
-        }
-        fetchUsers()
-    }, [api])
-
-
+export function TableDashboardTopAuthor({ data }: { data?:{ id: number; name: string; email: string; profile_image: string | undefined; stories_count: number; categories_count: number }[] }) {
+    const displayedData = data?.slice(0, 5) || [];
     return (
         <Card>
             <CardHeader>
@@ -55,16 +39,24 @@ export function TableDashboardTopAuthor() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                   {isLoading ? (
+                   {displayedData.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={4} className="h-24 text-center">
                                 <Loader2 className="animate-spin" />
                             </TableCell>
                         </TableRow>
                     ) : (
-                        users.map((user) => (
+                        displayedData.map((user) => (
                             <TableRow key={user.id}>
-                                <TableCell>{user.name}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Avatar>
+                                            <AvatarImage src={user.profile_image} />
+                                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        {user.name}
+                                    </div>
+                                </TableCell>
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell>{user.stories_count}</TableCell>
                                 <TableCell>{user.categories_count}</TableCell>
