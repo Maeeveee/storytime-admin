@@ -55,7 +55,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
     ];
 
     const userName = user?.name || "Loading...";
-    const userAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
+    const userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
 
     const isActive = (href: string) => {
         if (href === "/") return pathname === "/";
