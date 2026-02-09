@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -76,15 +76,17 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { useApi } from "@/lib/api/ApiProvider";
-import { Category } from "@/repositories";
+import { Category, Story } from "@/repositories";
 
-const multiColumnFilterFn: FilterFn<Category> = (row, columnId, filterValue) => {
+type CategoryWithCount = Category & { stories_count: number };
+
+const multiColumnFilterFn: FilterFn<CategoryWithCount> = (row, columnId, filterValue) => {
   const searchableRowContent = `${row.original.name} ${row.original.description || ""}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const columns: ColumnDef<Category>[] = [
+const columns: ColumnDef<CategoryWithCount>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -121,10 +123,10 @@ const columns: ColumnDef<Category>[] = [
     size: 180
   },
   {
-    header: "Description",
-    accessorKey: "description",
-    cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("description") || "-"}</div>,
-    size: 300
+    header: "Total Stories",
+    accessorKey: "stories_count",
+    cell: ({ row }) => <div>{row.getValue("stories_count")}</div>,
+    size: 100
   },
   {
     header: "Created At",
@@ -166,32 +168,44 @@ export default function TableCategoryList() {
     }
   ]);
 
-  const [data, setData] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [stories, setStories] = useState<Story[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    async function fetchCategories() {
+    async function fetchData() {
       try {
         setIsLoading(true);
-        const response = await api.categories.getList({ limit: 10000 });
-        setData(response.data);
+        const [categoriesRes, storiesRes] = await Promise.all([
+          api.categories.getList({ limit: 10000 }),
+          api.stories.getList({ limit: 10000 })
+        ]);
+        setCategories(categoriesRes.data);
+        setStories(storiesRes.data);
       } catch (err) {
-        console.error("Failed to fetch categories", err);
+        console.error("Failed to fetch data", err);
       } finally {
         setIsLoading(false);
       }
     }
-    fetchCategories();
+    fetchData();
   }, [api]);
+
+  const data: CategoryWithCount[] = useMemo(() => {
+    return categories.map(category => ({
+      ...category,
+      stories_count: stories.filter(story => story.category?.id === category.id).length
+    }));
+  }, [categories, stories]);
 
   const handleDeleteRows = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     try {
       await Promise.all(selectedRows.map((row) => api.categories.delete(row.original.id)));
-      const updatedData = data.filter(
+      const updatedCategories = categories.filter(
         (item) => !selectedRows.some((row) => row.original.id === item.id)
       );
-      setData(updatedData);
+      setCategories(updatedCategories);
       table.resetRowSelection();
     } catch (err) {
       console.error("Failed to delete categories", err);
