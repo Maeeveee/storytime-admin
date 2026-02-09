@@ -138,9 +138,9 @@ export default function DashboardPage() {
     return (
         <>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mb-3">
-                <CardDashbordStats title="Total Stories" content={totalStories.toString()} icon={<BookOpenText />} />
-                <CardDashbordStats title="Total Categories" content={totalCategories.toString()} icon={<BookOpenText />} />
-                <CardDashbordStats title="Total Users" content={totalUsers.toString()} icon={<BookOpenText />} />
+                <CardDashbordStats title="Total Stories" content={totalStories.toString()} icon={<BookOpenText />} href="stories" />
+                <CardDashbordStats title="Total Categories" content={totalCategories.toString()} icon={<BookOpenText />} href="categories" />
+                <CardDashbordStats title="Total Users" content={totalUsers.toString()} icon={<BookOpenText />} href="users" />
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2 mb-3">
                 <ChartPieDonutText data={stories.reduce((acc, story) => {

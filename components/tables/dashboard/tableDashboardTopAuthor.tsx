@@ -3,6 +3,7 @@ import {
     AvatarFallback,
     AvatarImage,
 } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
     Table,
     TableBody,
@@ -17,7 +18,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 export function TableDashboardTopAuthor({ data }: { data?: { id: number; name: string; email: string; profile_image: string | undefined; stories_count: number; categories_count: number }[] }) {
@@ -25,7 +26,16 @@ export function TableDashboardTopAuthor({ data }: { data?: { id: number; name: s
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Top Author</CardTitle>
+                <CardTitle>
+                    <div className="flex flex-row justify-between items-center">
+                        <p>Top Author</p>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href="/users">
+                                View All
+                            </Link>
+                        </Button>
+                    </div>
+                </CardTitle>
             </CardHeader>
             <Table>
                 <TableHeader>
