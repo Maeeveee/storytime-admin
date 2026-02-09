@@ -28,6 +28,7 @@ import {
   Columns3Icon,
   EllipsisIcon,
   ListFilterIcon,
+  Loader2Icon,
   PlusIcon,
   TrashIcon
 } from "lucide-react";
@@ -400,8 +401,10 @@ export default function TableCategoryList() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Loading...
+                <TableCell colSpan={columns.length} className="h-24">
+                  <div className="flex items-center justify-center">
+                    <Loader2Icon className="animate-spin" />
+                  </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
