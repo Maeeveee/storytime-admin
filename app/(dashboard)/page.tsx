@@ -6,30 +6,77 @@ import { ChartDashboardGrowth } from "@/components/charts/dashboard/chartDashboa
 import { BookOpenText } from "lucide-react";
 import { useApi } from "@/lib/api/ApiProvider";
 import React, { useState, useEffect } from "react";
-import { Story } from "@/repositories";
 import { useCategoryStore } from "@/stores/useCategoryStore";
+import { useUserStore } from "@/stores/useUserStore"
+import { useStoryStore } from "@/stores/useStoryStore"
 
 
 export default function DashboardPage() {
     const api = useApi();
-    const { categories, setCategories, setLoading, totalCategories, setTotalCategories } = useCategoryStore();
+
+    const {
+        categories,
+        setCategories,
+        setLoading: setCategoriesLoading,
+        totalCategories,
+        setTotalCategories
+    } = useCategoryStore();
+
+    const {
+        users,
+        setUsers,
+        setLoading: setUsersLoading,
+        totalUsers,
+        setTotalUser
+    } = useUserStore();
+
+    const {
+        stories,
+        setStories,
+        setLoading: setStoriesLoading,
+        totalStories,
+        setTotalStories
+    } = useStoryStore();
+
     useEffect(() => {
         if (categories.length === 0) {
-            setLoading(true)
+            setCategoriesLoading(true)
             api.categories.getList({ limit: 100 }).then(res => {
                 setCategories(res.data)
                 setTotalCategories(res.meta.pagination.total)
-                setLoading(false)
+            }).finally(() => {
+                setCategoriesLoading(false)
             })
         }
     }, [])
 
-    // const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
-    const [stories, setStories] = useState<Story[]>([]);
-    const [users, setUsers] = useState<any[]>([]);
-    const [totalStories, setTotalStories] = useState(0)
-    const [totalUsers, setTotalUsers] = useState(0)
-    const [isLoading, setIsLoading] = useState(false);
+    useEffect(() => {
+        if (stories.length === 0) {
+            setStoriesLoading(true)
+            api.stories.getList({ limit: 10000 }).then(res => {
+                setStories(res.data)
+                setTotalStories(res.meta.pagination.total)
+            }).catch(err => {
+                console.error("Failed to fetch stories", err);
+            }).finally(() => {
+                setStoriesLoading(false)
+            })
+        }
+    }, [])
+
+    useEffect(() => {
+        if (users.length === 0) {
+            setUsersLoading(true)
+            api.users.getList({ limit: 10000 }).then(res => {
+                setUsers(res.data)
+                setTotalUser(res.meta.pagination.total)
+            }).catch(err => {
+                console.error("Failed to fetch users", err);
+            }).finally(() => {
+                setUsersLoading(false)
+            })
+        }
+    }, []);
 
     const growthData = React.useMemo(() => {
         const months = [
@@ -107,32 +154,6 @@ export default function DashboardPage() {
             .sort((a, b) => b.stories_count - a.stories_count)
             .slice(0, 5);
     }, [stories, users])
-
-    useEffect(() => {
-        async function fetchStories() {
-            try {
-                const response = await api.stories.getList({ limit: 10000 })
-                setStories(response.data)
-                setTotalStories(response.meta.pagination.total)
-            } catch (err) {
-                console.error("Failed to fetch stories", err);
-            }
-        }
-        fetchStories();
-    }, [api])
-
-    useEffect(() => {
-        async function fetchUser() {
-            try {
-                const response = await api.users.getList({ limit: 10000 })
-                setUsers(response.data)
-                setTotalUsers(response.meta.pagination.total)
-            } catch (err) {
-                console.error("Failed to fetch users", err);
-            }
-        }
-        fetchUser();
-    }, [api]);
 
     return (
         <>
