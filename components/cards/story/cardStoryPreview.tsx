@@ -75,7 +75,20 @@ export default function CardStoryPreview() {
 
         if (!hasFilter) {
             if (globalStories.length > 0) {
-                setDisplayStories(transformStories(globalStories));
+                const ITEMS_PER_PAGE = 12;
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIndex = startIndex + ITEMS_PER_PAGE;
+                const paginatedStories = globalStories.slice(startIndex, endIndex);
+
+                setDisplayStories(transformStories(paginatedStories));
+                setMeta({
+                    pagination: {
+                        current_page: currentPage,
+                        last_page: Math.ceil(globalStories.length / ITEMS_PER_PAGE),
+                        total: globalStories.length,
+                        per_page: ITEMS_PER_PAGE
+                    }
+                });
                 setIsLoading(false);
             } else if (isGlobalLoading) {
                 setIsLoading(true);
