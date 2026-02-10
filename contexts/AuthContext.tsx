@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useApi } from '@/lib/api/ApiProvider'
 import type { Admin } from '@/repositories'
 import { ApiError } from '@/repositories'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 interface AuthContextType {
     user: Admin | null
@@ -39,64 +40,38 @@ function getToken(): string | null {
 export function AuthProvider({ children }: AuthProviderProps) {
     const router = useRouter()
     const api = useApi()
-    const [user, setUser] = useState<Admin | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
 
-    const refreshUser = useCallback(async () => {
-        const token = getToken()
-        if (!token) {
-            setUser(null)
-            setIsLoading(false)
-            return
-        }
-
-        try {
-            const response = await api.auth.getProfile()
-            setUser(response.data)
-        } catch (err) {
-            if (err instanceof ApiError && err.isUnauthorized) {
-                removeToken()
-                setUser(null)
-            }
-        } finally {
-            setIsLoading(false)
-        }
-    }, [api])
+    const {
+        admin,
+        isLoading,
+        login: storeLogin,
+        logout: storeLogout,
+        checkAuth
+    } = useAuthStore()
 
     useEffect(() => {
-        refreshUser()
-    }, [refreshUser])
+        checkAuth(api)
+    }, [api, checkAuth])
 
     const login = useCallback(async (email: string, password: string) => {
-        setIsLoading(true)
-        try {
-            const response = await api.auth.login({ email, password })
-            setToken(response.data.token)
-            setUser(response.data.user)
-            router.push('/')
-        } finally {
-            setIsLoading(false)
-        }
-    }, [api, router])
+        await storeLogin(api, { email, password })
+        router.push('/')
+    }, [api, storeLogin, router])
 
     const logout = useCallback(async () => {
-        setIsLoading(true)
-        try {
-            await api.auth.logout()
-        } catch {
-        } finally {
-            removeToken()
-            setUser(null)
-            setIsLoading(false)
-            router.push('/login')
-        }
-    }, [api, router])
+        await storeLogout(api)
+        router.push('/login')
+    }, [api, storeLogout, router])
+
+    const refreshUser = useCallback(async () => {
+        await checkAuth(api)
+    }, [api, checkAuth])
 
     return (
         <AuthContext.Provider value={{
-            user,
+            user: admin,
             isLoading,
-            isAuthenticated: !!user,
+            isAuthenticated: !!admin,
             login,
             logout,
             refreshUser

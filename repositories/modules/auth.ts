@@ -33,7 +33,7 @@ export default class AuthModule {
     }
 
     async logout(): Promise<ApiResponse<null>> {
-        return this.factory.post<ApiResponse<null>>('/admin/logout')
+        return this.factory.delete<ApiResponse<null>>('/admin/logout')
     }
 
     async getProfile(): Promise<ApiResponse<Admin>> {
