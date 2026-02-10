@@ -1,28 +1,11 @@
 "use client"
 import TableUserList from "@/components/tables/user/tableUserList";
-import { useApi } from "@/lib/api/ApiProvider";
-import { useState, useEffect } from "react";
+import { useUserStore } from "@/stores/useUserStore";
 
 export default function CreateUserPage() {
-    const api = useApi();
-    const [users, setUsers] = useState<any[]>([])
-    const [isLoading, setIsLoading] = useState(false)
+    const {users, isLoading} = useUserStore()
 
-    useEffect(() => {
-        async function fetchUser(){
-            try {
-                setIsLoading(true)
-                const response = await api.users.getList()
-                setUsers(response.data)
-            }catch(err){
-                console.error("Failed to fetch users", err)
-            }finally{
-                setIsLoading(false)
-            }
-        }
-        fetchUser()
-    }, [api])
-    
+
     return (
         isLoading ? (
             <div className="flex items-center justify-center h-screen">
@@ -31,7 +14,7 @@ export default function CreateUserPage() {
         ) : (
             <div>
                 <h1 className="text-2xl font-bold mb-6">User</h1>
-                <TableUserList data={users} />
+                <TableUserList data={users as any} />
             </div>
         )
     );
