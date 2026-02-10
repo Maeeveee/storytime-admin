@@ -7,6 +7,7 @@ import type { Story } from "@/repositories";
 import { IconArrowLeft, IconCalendar, IconUser, IconCategory, IconEdit } from "@tabler/icons-react";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StoryDetailPage() {
     const params = useParams();
@@ -49,8 +50,58 @@ export default function StoryDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="flex h-96 w-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-800 dark:border-neutral-700 dark:border-t-white"></div>
+            <div className="mx-auto w-full pb-10">
+                <div className="mb-6 flex items-center justify-between">
+                    <Link href="/stories">
+                        <InteractiveHoverButton direction="left">
+                            Back
+                        </InteractiveHoverButton>
+                    </Link>
+
+                    <Skeleton className="h-9 w-28 rounded-md" />
+                </div>
+
+                <div className="mb-10 text-center">
+                    <div className="mx-auto max-w-3xl space-y-2 mb-6">
+                        <Skeleton className="h-10 w-3/4 mx-auto" />
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                            <Skeleton className="h-4 w-24" />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-6 w-6 rounded-full" />
+                            <Skeleton className="h-4 w-24" />
+                        </div>
+
+                        <Skeleton className="h-6 w-24 rounded-full" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                    <div className="lg:col-span-5">
+                        <Skeleton className="h-150 w-full rounded-2xl" />
+                    </div>
+
+                    <div className="lg:col-span-7 space-y-4">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <div className="pt-4 space-y-4">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-11/12" />
+                            <Skeleton className="h-4 w-full" />
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -77,7 +128,7 @@ export default function StoryDetailPage() {
     });
 
     return (
-        <div className="mx-auto max-w-7xl pb-10">
+        <div className="mx-auto w-full pb-10">
             <div className="mb-6 flex items-center justify-between">
                 <Link
                     href="/stories">
