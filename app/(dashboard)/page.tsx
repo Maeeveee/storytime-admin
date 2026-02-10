@@ -7,15 +7,27 @@ import { BookOpenText } from "lucide-react";
 import { useApi } from "@/lib/api/ApiProvider";
 import React, { useState, useEffect } from "react";
 import { Story } from "@/repositories";
+import { useCategoryStore } from "@/stores/useCategoryStore";
 
 
 export default function DashboardPage() {
     const api = useApi();
-    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const { categories, setCategories, setLoading, totalCategories, setTotalCategories } = useCategoryStore();
+    useEffect(() => {
+        if (categories.length === 0) {
+            setLoading(true)
+            api.categories.getList({ limit: 100 }).then(res => {
+                setCategories(res.data)
+                setTotalCategories(res.meta.pagination.total)
+                setLoading(false)
+            })
+        }
+    }, [])
+
+    // const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
     const [stories, setStories] = useState<Story[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [totalStories, setTotalStories] = useState(0)
-    const [totalCategories, setTotalCategories] = useState(0)
     const [totalUsers, setTotalUsers] = useState(0)
     const [isLoading, setIsLoading] = useState(false);
 
@@ -95,19 +107,6 @@ export default function DashboardPage() {
             .sort((a, b) => b.stories_count - a.stories_count)
             .slice(0, 5);
     }, [stories, users])
-
-    useEffect(() => {
-        async function fetchCategories() {
-            try {
-                const response = await api.categories.getList({ limit: 10000 })
-                setCategories(response.data.map(cat => ({ id: cat.id, name: cat.name })));
-                setTotalCategories(response.meta.pagination.total)
-            } catch (err) {
-                console.error("Failed to fetch categories", err);
-            }
-        }
-        fetchCategories();
-    }, [api])
 
     useEffect(() => {
         async function fetchStories() {
