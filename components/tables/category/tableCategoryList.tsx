@@ -78,6 +78,8 @@ import {
 } from "@/components/ui/table";
 import { useApi } from "@/lib/api/ApiProvider";
 import { Category, Story } from "@/repositories";
+import { useCategoryStore } from "@/stores/useCategoryStore";
+import { useStoryStore } from "@/stores/useStoryStore";
 
 type CategoryWithCount = Category & { stories_count: number };
 
@@ -154,6 +156,9 @@ const columns: ColumnDef<CategoryWithCount>[] = [
 export default function TableCategoryList() {
   const id = useId();
   const api = useApi();
+  const { categories: globalCategories, isLoading: isGlobalLoading } = useCategoryStore();
+  const { stories: globalStories } = useStoryStore();
+
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
@@ -169,45 +174,76 @@ export default function TableCategoryList() {
     }
   ]);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [stories, setStories] = useState<Story[]>([]);
+  const [displayCategories, setDisplayCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const nameFilterValue = (columnFilters.find(f => f.id === 'name')?.value as string) || "";
+  const [debouncedSearch, setDebouncedSearch] = useState(nameFilterValue);
+
   useEffect(() => {
-    async function fetchData() {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(nameFilterValue);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [nameFilterValue]);
+
+
+  useEffect(() => {
+    async function fetchFilteredCategories() {
+      if (!debouncedSearch) {
+        if (globalCategories.length > 0) {
+          setDisplayCategories(globalCategories);
+          setIsLoading(false);
+        } else if (isGlobalLoading) {
+          setIsLoading(true);
+        }
+        return;
+      }
+
       try {
         setIsLoading(true);
-        const [categoriesRes, storiesRes] = await Promise.all([
-          api.categories.getList({ limit: 10000 }),
-          api.stories.getList({ limit: 10000 })
-        ]);
-        setCategories(categoriesRes.data);
-        setStories(storiesRes.data);
-      } catch (err) {
-        console.error("Failed to fetch data", err);
+        const response = await api.categories.getList({ search: debouncedSearch, limit: 100 });
+        setDisplayCategories(response.data);
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
       } finally {
         setIsLoading(false);
       }
     }
-    fetchData();
-  }, [api]);
+
+    fetchFilteredCategories();
+  }, [api, debouncedSearch, globalCategories, isGlobalLoading]);
+
+
+  const storyCountMap = useMemo(() => {
+    const map = new Map<number, number>();
+    globalStories.forEach(story => {
+      if (story.category?.id) {
+        const current = map.get(story.category.id) || 0;
+        map.set(story.category.id, current + 1);
+      }
+    });
+    return map;
+  }, [globalStories]);
 
   const data: CategoryWithCount[] = useMemo(() => {
-    return categories.map(category => ({
+    return displayCategories.map(category => ({
       ...category,
-      stories_count: stories.filter(story => story.category?.id === category.id).length
+      stories_count: storyCountMap.get(category.id) || 0
     }));
-  }, [categories, stories]);
+  }, [displayCategories, storyCountMap]);
 
   const handleDeleteRows = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     try {
       await Promise.all(selectedRows.map((row) => api.categories.delete(row.original.id)));
-      const updatedCategories = categories.filter(
+
+      const updatedCategories = displayCategories.filter(
         (item) => !selectedRows.some((row) => row.original.id === item.id)
       );
-      setCategories(updatedCategories);
+      setDisplayCategories(updatedCategories);
       table.resetRowSelection();
+
     } catch (err) {
       console.error("Failed to delete categories", err);
     }
