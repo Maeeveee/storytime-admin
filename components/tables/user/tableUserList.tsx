@@ -31,7 +31,8 @@ import {
   FilterIcon,
   ListFilterIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  UserIcon
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -134,7 +135,9 @@ const columns: ColumnDef<User>[] = [
   {
     header: "Name",
     accessorKey: "name",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("name")}</div>
+    ),
     size: 180,
     filterFn: multiColumnFilterFn,
     enableHiding: false
