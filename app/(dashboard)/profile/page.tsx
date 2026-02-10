@@ -1,50 +1,13 @@
 "use client"
-import { useEffect, useState } from "react";
-import { Admin } from "@/repositories";
-import { useApi } from "@/lib/api/ApiProvider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { IconUser } from "@tabler/icons-react";
+import { useAuthStore } from "@/stores/useAuthStore";
+
 
 export default function ProfilePage() {
-    const api = useApi();
-    const [admin, setAdmin] = useState<Admin | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        async function fetchAdmin() {
-            try {
-                setIsLoading(true);
-                const response = await api.auth.getProfile();
-                setAdmin(response.data);
-            } catch (err) {
-                console.error("Failed to fetch profile", err);
-                setError("Failed to load profile data.");
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchAdmin();
-    }, [api]);
-
-    if (isLoading) {
-        return (
-            <div className="flex h-full w-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-200 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white"></div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex h-full w-full items-center justify-center text-red-500">
-                {error}
-            </div>
-        );
-    }
+    const { admin } = useAuthStore();
 
     return (
         <div className="flex h-full w-full flex-col gap-6 p-4 md:p-8">
