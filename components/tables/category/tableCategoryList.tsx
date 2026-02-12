@@ -632,6 +632,20 @@ function RowActions({ row }: { row: Row<Category> }) {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      setIsSubmitting(true);
+      await api.categories.delete(row.original.id);
+      toast.success("Category deleted successfully!");
+      setEditOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete category");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
   return (
     <>
       <DropdownMenu>
@@ -650,7 +664,7 @@ function RowActions({ row }: { row: Row<Category> }) {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive focus:text-destructive">
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={handleDelete}>
             <span>Delete</span>
             <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
