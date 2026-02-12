@@ -21,6 +21,7 @@ export default function StoryDetailPage() {
     const [error, setError] = useState<string | null>(null);
 
     const handleDeleteStory = async () => {
+        if (!story) return;
         try {
             await api.stories.delete(story.id);
             router.push("/stories");
