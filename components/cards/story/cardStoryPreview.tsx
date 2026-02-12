@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { StoryCard, type StoryCardData } from "@/components/cards/story/StoryCard";
 import FilterStory from "@/components/filters/story/filterStory";
 import { useApi } from "@/lib/api/ApiProvider";
@@ -7,21 +7,21 @@ import type { Story, Category } from "@/repositories";
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useStoryStore } from "@/stores/useStoryStore";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 
 export default function CardStoryPreview() {
-    const { stories: globalStories, isLoading: isGlobalLoading } = useStoryStore()
     const { categories } = useCategoryStore()
     const api = useApi();
 
-    const [displayStories, setDisplayStories] = useState<StoryCardData[]>([]);
+    // All stories fetched from API (before client-side category filter)
+    const [allStories, setAllStories] = useState<StoryCardData[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+    const [sortBy, setSortBy] = useState<string>("created_at");
     const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -75,16 +75,18 @@ export default function CardStoryPreview() {
         setRefreshKey((k) => k + 1);
     };
 
+    // Fetch stories from API — server handles search, sort, pagination
     useEffect(() => {
         async function fetchStories() {
             try {
                 setIsLoading(true);
                 const params: any = {
-                    limit: 12,
-                    page: currentPage
+                    limit: 100,
+                    page: currentPage,
+                    sort_by: sortBy,
+                    sort_order: 'desc'
                 };
                 if (debouncedSearch) params.search = debouncedSearch;
-                if (selectedCategoryId) params.category_id = parseInt(selectedCategoryId);
 
                 const response = await api.stories.getList(params);
 
@@ -92,7 +94,7 @@ export default function CardStoryPreview() {
                     setMeta(response.meta);
                 }
 
-                setDisplayStories(transformStories(response.data));
+                setAllStories(transformStories(response.data));
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Failed to fetch stories");
             } finally {
@@ -101,7 +103,14 @@ export default function CardStoryPreview() {
         }
 
         fetchStories();
-    }, [api, debouncedSearch, selectedCategoryId, currentPage, refreshKey, transformStories]);
+    }, [api, debouncedSearch, sortBy, currentPage, refreshKey, transformStories]);
+
+    // Client-side filtering by category
+    const filteredStories = useMemo(() => {
+        if (!selectedCategoryId) return allStories;
+        const catId = parseInt(selectedCategoryId);
+        return allStories.filter((story) => story.category?.id === catId);
+    }, [allStories, selectedCategoryId]);
 
     if (error) {
         return (
@@ -113,6 +122,8 @@ export default function CardStoryPreview() {
                     setSelectedCategory={handleCategoryChange}
                     categories={categories}
                     onStoryCreated={handleStoryCreated}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
                 />
                 <div className="rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
                     {error}
@@ -129,6 +140,9 @@ export default function CardStoryPreview() {
                 selectedCategory={selectedCategoryId}
                 setSelectedCategory={handleCategoryChange}
                 categories={categories}
+                onStoryCreated={handleStoryCreated}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
             />
 
             {isLoading ? (
@@ -137,14 +151,14 @@ export default function CardStoryPreview() {
                         <div key={i} className="h-80 animate-pulse rounded-2xl bg-gray-200 dark:bg-neutral-700" />
                     ))}
                 </div>
-            ) : displayStories.length === 0 ? (
+            ) : filteredStories.length === 0 ? (
                 <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500 dark:bg-neutral-800 dark:text-neutral-400">
                     No stories found
                 </div>
             ) : (
                 <>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {displayStories.map((story) => (
+                        {filteredStories.map((story) => (
                             <StoryCard key={story.id} story={story} />
                         ))}
                     </div>

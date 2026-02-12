@@ -134,7 +134,7 @@ export interface StoryListParams {
     author_id?: number
     limit?: number
     status?: 'draft' | 'published'
-    sort_by?: 'created_at' | 'title' | 'updated_at'
+    sort_by?: 'id' | 'name' | 'slug' | 'category_id' | 'author_id' | 'created_at' | 'updated_at'
     sort_order?: 'asc' | 'desc'
 }
 

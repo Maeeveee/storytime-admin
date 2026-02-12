@@ -48,6 +48,8 @@ interface FilterStoryProps {
     setSelectedCategory: (category: string | null) => void;
     categories: CategoryOption[];
     onStoryCreated?: () => void;
+    sortBy: string;
+    setSortBy: (sort: string) => void;
 }
 
 export default function FilterStory({
@@ -57,6 +59,8 @@ export default function FilterStory({
     setSelectedCategory,
     categories,
     onStoryCreated,
+    sortBy,
+    setSortBy,
 }: FilterStoryProps) {
     const api = useApi();
 
@@ -185,8 +189,8 @@ export default function FilterStory({
                         </div>
                     </PopoverContent>
                 </Popover>
-
             </div>
+
             <div className="flex items-center gap-3">
                 {/* Create Story Button */}
                 <Sheet open={sheetOpen} onOpenChange={(open) => {
