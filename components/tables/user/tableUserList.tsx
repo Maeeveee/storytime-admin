@@ -97,19 +97,14 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { useApi } from "@/lib/api/ApiProvider";
-import type { ApiClient } from "@/repositories";
+import type { ApiClient, User } from "@/repositories";
 import { toast } from "sonner";
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  about?: string;
-  created_at?: string;
-};
+
 
 interface TableUserListProps {
   data: User[];
+  onRefresh?: () => void;
 }
 
 const multiColumnFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
@@ -186,13 +181,13 @@ const columns: ColumnDef<User>[] = [
   {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => <RowActions row={row} />,
+    cell: ({ row, table }) => <RowActions row={row} onRefresh={(table.options.meta as any)?.onRefresh} />,
     size: 60,
     enableHiding: false
   }
 ];
 
-export default function TableUserList({ data }: TableUserListProps) {
+export default function TableUserList({ data, onRefresh }: TableUserListProps) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -209,9 +204,21 @@ export default function TableUserList({ data }: TableUserListProps) {
     }
   ]);
 
-  const handleDeleteRows = () => {
+  // Add api access
+  const api = useApi();
+
+  const handleDeleteRows = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    table.resetRowSelection();
+    if (selectedRows.length === 0) return;
+
+    try {
+      await Promise.all(selectedRows.map((row) => api.users.delete(Number(row.original.id))));
+      toast.success(`Successfully deleted ${selectedRows.length} users`);
+      table.resetRowSelection();
+      onRefresh?.();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete users");
+    }
   };
 
   const table = useReactTable({
@@ -232,6 +239,9 @@ export default function TableUserList({ data }: TableUserListProps) {
       pagination,
       columnFilters,
       columnVisibility
+    },
+    meta: {
+      onRefresh
     }
   });
   return (
@@ -333,7 +343,7 @@ export default function TableUserList({ data }: TableUserListProps) {
           )}
 
           <AddUserSheet onUserCreated={() => {
-            // Parent should handle refresh
+            onRefresh?.();
           }} />
         </div>
       </div>
@@ -509,13 +519,18 @@ export default function TableUserList({ data }: TableUserListProps) {
   );
 }
 
-function RowActions({ row }: { row: Row<User> }) {
+function RowActions({ row, onRefresh }: { row: Row<User>; onRefresh?: () => void }) {
   const api = useApi();
   const [editOpen, setEditOpen] = useState(false);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [name, setName] = useState(row.original.name);
   const [email, setEmail] = useState(row.original.email);
   const [about, setAbout] = useState(row.original.about);
+
+  // Reset Password State
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirmation, setNewPasswordConfirmation] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEditOpen = () => {
@@ -545,9 +560,11 @@ function RowActions({ row }: { row: Row<User> }) {
 
       toast.success("User updated successfully!");
       setEditOpen(false);
-      row.original.name = name.trim();
-      row.original.email = email.trim();
-      row.original.about = about?.trim();
+      // We don't need to manually update row if we refresh
+      onRefresh?.();
+      // row.original.name = name.trim();
+      // row.original.email = email.trim();
+      // row.original.about = about?.trim();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update user");
     } finally {
@@ -556,11 +573,28 @@ function RowActions({ row }: { row: Row<User> }) {
   };
 
   const handleResetPassword = async () => {
+    if (!newPassword) {
+      toast.error("Password is required");
+      return;
+    }
+    if (newPassword !== newPasswordConfirmation) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      await api.users.resetPassword(Number(row.original.id));
-      toast.success("Password reset successfully!");
-      setResetPasswordOpen(false);
+      await api.users.resetPassword(Number(row.original.id), {
+        password: newPassword,
+        password_confirmation: newPasswordConfirmation
+      });
+      setNewPassword("");
+      setNewPasswordConfirmation("");
+      onRefresh?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to reset password");
     } finally {
@@ -568,12 +602,19 @@ function RowActions({ row }: { row: Row<User> }) {
     }
   };
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const handleDelete = async () => {
     try {
+      setIsSubmitting(true);
       await api.users.delete(Number(row.original.id));
       toast.success("User deleted successfully!");
+      setDeleteOpen(false);
+      onRefresh?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete user");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -600,11 +641,36 @@ function RowActions({ row }: { row: Row<User> }) {
             </DropdownMenuSub>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={handleDelete}>
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeleteOpen(true)}>
             <span>Delete</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true">
+              <CircleAlertIcon className="opacity-80" size={16} />
+            </div>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete User</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <strong>{row.original.name}</strong>? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isSubmitting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isSubmitting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Profile Sheet */}
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
@@ -658,30 +724,56 @@ function RowActions({ row }: { row: Row<User> }) {
         </SheetContent>
       </Sheet>
 
-      {/* Reset Password Confirmation */}
-      <AlertDialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
-        <AlertDialogContent>
-          <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
-            <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
-              aria-hidden="true">
-              <CircleAlertIcon className="opacity-80" size={16} />
+      {/* Reset Password Sheet */}
+      <Sheet open={resetPasswordOpen} onOpenChange={(open) => {
+        setResetPasswordOpen(open);
+        if (!open) {
+          setNewPassword("");
+          setNewPasswordConfirmation("");
+        }
+      }}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Reset Password</SheetTitle>
+            <SheetDescription>
+              Set a new password for <strong>{row.original.name}</strong>.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid flex-1 auto-rows-min gap-6 px-4">
+            <div className="grid gap-3">
+              <Label htmlFor={`reset-password-${row.original.id}`}>New Password</Label>
+              <Input
+                id={`reset-password-${row.original.id}`}
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="Enter new password"
+              />
             </div>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Reset Password</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to reset the password for <strong>{row.original.name}</strong>? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+            <div className="grid gap-3">
+              <Label htmlFor={`reset-password-confirm-${row.original.id}`}>Confirm Password</Label>
+              <Input
+                id={`reset-password-confirm-${row.original.id}`}
+                type="password"
+                value={newPasswordConfirmation}
+                onChange={(e) => setNewPasswordConfirmation(e.target.value)}
+                disabled={isSubmitting}
+                placeholder="Confirm new password"
+              />
+            </div>
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleResetPassword} disabled={isSubmitting}>
+          <SheetFooter>
+            <Button onClick={handleResetPassword} disabled={isSubmitting}>
+              {isSubmitting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting ? "Resetting..." : "Reset Password"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+            <SheetClose asChild>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
@@ -718,6 +810,10 @@ function AddUserSheet({ onUserCreated }: { onUserCreated: () => void }) {
     }
     if (password !== passwordConfirmation) {
       toast.error("Passwords do not match");
+      return;
+    }
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
 

@@ -4,6 +4,7 @@ import type {
     Story,
     CreateUserRequest,
     UpdateUserRequest,
+    ResetPasswordRequest,
     UserListParams,
     ApiResponse,
     PaginatedResponse
@@ -40,8 +41,8 @@ export default class UsersModule {
         return this.factory.post<ApiResponse<User>>(`/admin/users/${id}/profile-image`, formData as unknown as Record<string, unknown>)
     }
 
-    async resetPassword(id: number): Promise<ApiResponse<null>> {
-        return this.factory.post<ApiResponse<null>>(`/admin/users/${id}/reset-password`)
+    async resetPassword(id: number, data: ResetPasswordRequest): Promise<ApiResponse<null>> {
+        return this.factory.post<ApiResponse<null>>(`/admin/users/${id}/reset-password`, data)
     }
 
     async delete(id: number): Promise<ApiResponse<null>> {

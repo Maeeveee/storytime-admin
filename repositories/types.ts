@@ -88,6 +88,11 @@ export interface UpdateUserRequest {
     about?: string
 }
 
+export interface ResetPasswordRequest {
+    password: string
+    password_confirmation: string
+}
+
 // ============================================
 // Story Types
 // ============================================
