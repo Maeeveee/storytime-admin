@@ -26,7 +26,8 @@ export default function StoryDetailPage() {
             try {
                 setIsLoading(true);
 
-                const listResponse = await api.stories.getList({ search: slug });
+                const searchTerm = slug.replace(/-/g, ' ');
+                const listResponse = await api.stories.getList({ search: searchTerm });
                 const foundStory = listResponse.data.find(s => s.slug === slug);
 
                 if (!foundStory) {
