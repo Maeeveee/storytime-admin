@@ -205,7 +205,7 @@ export default function StoryDetailPage() {
                                 className="h-auto w-full object-cover"
                             />
                         ) : (
-                            <div className="aspect-[3/4] flex w-full items-center justify-center text-neutral-400">
+                            <div className="aspect-3/4 flex w-full items-center justify-center text-neutral-400">
                                 No Cover Image
                             </div>
                         )}

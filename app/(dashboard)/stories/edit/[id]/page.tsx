@@ -244,7 +244,7 @@ export default function EditStoryPage() {
                                 className="h-auto w-full object-cover transition-opacity group-hover:opacity-75"
                             />
                         ) : (
-                            <div className="aspect-[3/4] flex w-full items-center justify-center text-neutral-400">
+                            <div className="aspect-3/4 flex w-full items-center justify-center text-neutral-400">
                                 No Cover Image
                             </div>
                         )}
