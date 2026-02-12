@@ -632,12 +632,15 @@ function RowActions({ row }: { row: Row<Category> }) {
     }
   };
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const handleDelete = async () => {
     try {
       setIsSubmitting(true);
       await api.categories.delete(row.original.id);
       toast.success("Category deleted successfully!");
-      setEditOpen(false);
+      setDeleteOpen(false);
+      window.location.reload();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete category");
     } finally {
@@ -664,12 +667,36 @@ function RowActions({ row }: { row: Row<Category> }) {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={handleDelete}>
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeleteOpen(true)}>
             <span>Delete</span>
             <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true">
+              <CircleAlertIcon className="opacity-80" size={16} />
+            </div>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Category</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <strong>{row.original.name}</strong>? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isSubmitting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isSubmitting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent>
