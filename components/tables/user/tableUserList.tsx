@@ -41,6 +41,7 @@ import {
   EllipsisIcon,
   FilterIcon,
   ListFilterIcon,
+  Loader2Icon,
   PlusIcon,
   TrashIcon,
   UserIcon
@@ -95,6 +96,9 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { useApi } from "@/lib/api/ApiProvider";
+import type { ApiClient } from "@/repositories";
+import { toast } from "sonner";
 
 type User = {
   id: string;
@@ -327,47 +331,10 @@ export default function TableUserList({ data }: TableUserListProps) {
               </AlertDialogContent>
             </AlertDialog>
           )}
-          
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button className="ml-auto" variant="outline">
-                <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-                Add user
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Add User</SheetTitle>
-                <SheetDescription>
-                  Add a new user to the list.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                <div className="grid gap-3">
-                  <Label htmlFor="sheet-user-name">User Name</Label>
-                  <Input id="sheet-user-name" defaultValue="New User" />
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="sheet-user-email">User Email</Label>
-                  <Input id="sheet-user-email" defaultValue="newUser@example.com" />
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="sheet-user-password">User Password</Label>
-                  <Input id="sheet-user-password" defaultValue="password" />
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="sheet-user-role">User Role</Label>
-                  <Input id="sheet-user-role" defaultValue="user" />
-                </div>
-              </div>
-              <SheetFooter>
-                <Button>Add</Button>
-                <SheetClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </SheetClose>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
+
+          <AddUserSheet onUserCreated={() => {
+            // Parent should handle refresh
+          }} />
         </div>
       </div>
 
@@ -570,5 +537,136 @@ function RowActions({ row }: { row: Row<User> }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function AddUserSheet({ onUserCreated }: { onUserCreated: () => void }) {
+  const api = useApi();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setPasswordConfirmation("");
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+    if (!password) {
+      toast.error("Password is required");
+      return;
+    }
+    if (password !== passwordConfirmation) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.users.create({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        password_confirmation: passwordConfirmation,
+      });
+
+      toast.success("User created successfully!");
+      resetForm();
+      setSheetOpen(false);
+      onUserCreated();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Sheet open={sheetOpen} onOpenChange={(open) => {
+      setSheetOpen(open);
+      if (!open) resetForm();
+    }}>
+      <SheetTrigger asChild>
+        <Button className="ml-auto" variant="outline">
+          <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+          Add user
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Add User</SheetTitle>
+          <SheetDescription>
+            Add a new user to the list.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="grid flex-1 auto-rows-min gap-6 px-4">
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-user-name">Name</Label>
+            <Input
+              id="sheet-user-name"
+              placeholder="Jane Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-user-email">Email</Label>
+            <Input
+              id="sheet-user-email"
+              type="email"
+              placeholder="user@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-user-password">Password</Label>
+            <Input
+              id="sheet-user-password"
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-user-password-confirm">Confirm Password</Label>
+            <Input
+              id="sheet-user-password-confirm"
+              type="password"
+              placeholder="Confirm password"
+              value={passwordConfirmation}
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+        </div>
+        <SheetFooter>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Adding..." : "Add"}
+          </Button>
+          <SheetClose asChild>
+            <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
