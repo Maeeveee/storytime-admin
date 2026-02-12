@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   ColumnDef,
@@ -316,10 +327,47 @@ export default function TableUserList({ data }: TableUserListProps) {
               </AlertDialogContent>
             </AlertDialog>
           )}
-          <Button className="ml-auto" variant="outline">
-            <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-            Add user
-          </Button>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="ml-auto" variant="outline">
+                <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+                Add user
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Add User</SheetTitle>
+                <SheetDescription>
+                  Add a new user to the list.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="grid flex-1 auto-rows-min gap-6 px-4">
+                <div className="grid gap-3">
+                  <Label htmlFor="sheet-user-name">User Name</Label>
+                  <Input id="sheet-user-name" defaultValue="New User" />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="sheet-user-email">User Email</Label>
+                  <Input id="sheet-user-email" defaultValue="newUser@example.com" />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="sheet-user-password">User Password</Label>
+                  <Input id="sheet-user-password" defaultValue="password" />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="sheet-user-role">User Role</Label>
+                  <Input id="sheet-user-role" defaultValue="user" />
+                </div>
+              </div>
+              <SheetFooter>
+                <Button>Add</Button>
+                <SheetClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </SheetClose>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 

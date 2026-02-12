@@ -1,5 +1,17 @@
 "use client";
 import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
+
+import { Textarea } from "@/components/ui/textarea";
+import {
     CircleXIcon,
     Columns3Icon,
     ListFilterIcon,
@@ -14,6 +26,8 @@ import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger
@@ -122,12 +136,54 @@ export default function FilterStory({
             </div>
             <div className="flex items-center gap-3">
                 {/* Create Story Button */}
-                <Link href="/stories/create">
-                    <Button className="ml-auto" variant="outline">
-                        <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-                        Create Story
-                    </Button>
-                </Link>
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button className="ml-auto" variant="outline">
+                            <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+                            Add Story
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Add Story</SheetTitle>
+                            <SheetDescription>
+                                Add a new story to the list.
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="grid flex-1 auto-rows-min gap-6 px-4">
+                            <div className="grid gap-3">
+                                <Label htmlFor="sheet-story-title">Story Title</Label>
+                                <Input id="sheet-story-title" defaultValue="New Story" />
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="sheet-story-content">Story Content</Label>
+                                <Textarea id="sheet-story-content" defaultValue="new-story" />
+                            </div>
+                            <div className="grid gap-3">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline">Category</Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-40" align="start">
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuLabel>Category</DropdownMenuLabel>
+                                            <DropdownMenuItem>
+                                                Profile
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <SheetFooter>
+                                <Button>Add</Button>
+                                <SheetClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                </SheetClose>
+                            </SheetFooter>
+                        </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </div>
-        </div>);
+    );
 }

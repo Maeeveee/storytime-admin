@@ -1,4 +1,14 @@
 "use client";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
@@ -371,10 +381,38 @@ export default function TableCategoryList() {
             </AlertDialog>
           )}
           {/* Add category button */}
-          <Button className="ml-auto" variant="outline">
-            <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-            Add Category
-          </Button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="ml-auto" variant="outline">
+                <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+                Add Category
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Add Category</SheetTitle>
+                <SheetDescription>
+                  Add a new category to the list.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="grid flex-1 auto-rows-min gap-6 px-4">
+                <div className="grid gap-3">
+                  <Label htmlFor="sheet-category-name">Category Name</Label>
+                  <Input id="sheet-category-name" defaultValue="New Category" />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="sheet-category-slug">Slug</Label>
+                  <Input id="sheet-category-slug" defaultValue="new-category" />
+                </div>
+              </div>
+              <SheetFooter>
+                <Button>Add</Button>
+                <SheetClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </SheetClose>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
