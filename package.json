@@ -31,6 +31,7 @@
     "react-parallax-tilt": "^1.7.317",
     "react-use-measure": "^2.1.7",
     "recharts": "^2.15.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "zustand": "^5.0.11"
   },

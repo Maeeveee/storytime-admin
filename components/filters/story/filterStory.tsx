@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import {
     Sheet,
     SheetClose,
@@ -13,8 +14,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
     CircleXIcon,
-    Columns3Icon,
     ListFilterIcon,
+    Loader2Icon,
     PlusIcon,
     TagIcon,
 } from "lucide-react";
@@ -22,20 +23,18 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import Link from "next/link";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useApi } from "@/lib/api/ApiProvider";
+import { toast } from "sonner";
 
 interface CategoryOption {
     id: number;
@@ -48,6 +47,7 @@ interface FilterStoryProps {
     selectedCategory: string | null;
     setSelectedCategory: (category: string | null) => void;
     categories: CategoryOption[];
+    onStoryCreated?: () => void;
 }
 
 export default function FilterStory({
@@ -56,10 +56,22 @@ export default function FilterStory({
     selectedCategory,
     setSelectedCategory,
     categories,
+    onStoryCreated,
 }: FilterStoryProps) {
+    const api = useApi();
+
+    // Sheet open state
+    const [sheetOpen, setSheetOpen] = useState(false);
+
+    // Form state
+    const [title, setTitle] = useState("");
+    const [content, setContent] = useState("");
+    const [categoryId, setCategoryId] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleCategoryChange = (value: string) => {
         if (selectedCategory === value) {
-            setSelectedCategory(null); // Deselect if already selected
+            setSelectedCategory(null);
         } else {
             setSelectedCategory(value);
         }
@@ -67,6 +79,47 @@ export default function FilterStory({
 
     const handleClearSearch = () => {
         setSearchQuery("");
+    };
+
+    const resetForm = () => {
+        setTitle("");
+        setContent("");
+        setCategoryId("");
+    };
+
+    const handleSubmit = async () => {
+        // Validate
+        if (!title.trim()) {
+            toast.error("Title is required");
+            return;
+        }
+        if (!content.trim()) {
+            toast.error("Content is required");
+            return;
+        }
+        if (!categoryId) {
+            toast.error("Please select a category");
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            await api.stories.create({
+                title: title.trim(),
+                content: content.trim(),
+                category_id: parseInt(categoryId),
+                user_id: 1,
+            });
+
+            toast.success("Story created successfully!");
+            resetForm();
+            setSheetOpen(false);
+            onStoryCreated?.();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to create story");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -136,7 +189,10 @@ export default function FilterStory({
             </div>
             <div className="flex items-center gap-3">
                 {/* Create Story Button */}
-                <Sheet>
+                <Sheet open={sheetOpen} onOpenChange={(open) => {
+                    setSheetOpen(open);
+                    if (!open) resetForm();
+                }}>
                     <SheetTrigger asChild>
                         <Button className="ml-auto" variant="outline">
                             <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
@@ -153,37 +209,57 @@ export default function FilterStory({
                         <div className="grid flex-1 auto-rows-min gap-6 px-4">
                             <div className="grid gap-3">
                                 <Label htmlFor="sheet-story-title">Story Title</Label>
-                                <Input id="sheet-story-title" defaultValue="New Story" />
+                                <Input
+                                    id="sheet-story-title"
+                                    placeholder="Enter story title..."
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    disabled={isSubmitting}
+                                />
                             </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="sheet-story-content">Story Content</Label>
-                                <Textarea id="sheet-story-content" defaultValue="new-story" />
+                                <Textarea
+                                    id="sheet-story-content"
+                                    placeholder="Enter story content..."
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    disabled={isSubmitting}
+                                    rows={6}
+                                />
                             </div>
                             <div className="grid gap-3">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline">Category</Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-40" align="start">
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuLabel>Category</DropdownMenuLabel>
-                                            <DropdownMenuItem>
-                                                Profile
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <Label htmlFor="sheet-story-category">Category</Label>
+                                <Select
+                                    value={categoryId}
+                                    onValueChange={setCategoryId}
+                                    disabled={isSubmitting}
+                                >
+                                    <SelectTrigger className="w-full" id="sheet-story-category">
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={cat.id.toString()}>
+                                                {cat.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <SheetFooter>
-                                <Button>Add</Button>
+                                <Button onClick={handleSubmit} disabled={isSubmitting}>
+                                    {isSubmitting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isSubmitting ? "Adding..." : "Add"}
+                                </Button>
                                 <SheetClose asChild>
-                                    <Button variant="outline">Cancel</Button>
+                                    <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
                                 </SheetClose>
                             </SheetFooter>
                         </div>
-                        </SheetContent>
-                    </Sheet>
-                </div>
+                    </SheetContent>
+                </Sheet>
             </div>
+        </div>
     );
 }

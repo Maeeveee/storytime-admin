@@ -26,6 +26,7 @@ export default function CardStoryPreview() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [meta, setMeta] = useState<any>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -70,33 +71,12 @@ export default function CardStoryPreview() {
         });
     }, []);
 
+    const handleStoryCreated = () => {
+        setRefreshKey((k) => k + 1);
+    };
+
     useEffect(() => {
-        const hasFilter = debouncedSearch || selectedCategoryId;
-
-        if (!hasFilter) {
-            if (globalStories.length > 0) {
-                const ITEMS_PER_PAGE = 12;
-                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-                const endIndex = startIndex + ITEMS_PER_PAGE;
-                const paginatedStories = globalStories.slice(startIndex, endIndex);
-
-                setDisplayStories(transformStories(paginatedStories));
-                setMeta({
-                    pagination: {
-                        current_page: currentPage,
-                        last_page: Math.ceil(globalStories.length / ITEMS_PER_PAGE),
-                        total: globalStories.length,
-                        per_page: ITEMS_PER_PAGE
-                    }
-                });
-                setIsLoading(false);
-            } else if (isGlobalLoading) {
-                setIsLoading(true);
-            }
-            return;
-        }
-
-        async function fetchFilteredStories() {
+        async function fetchStories() {
             try {
                 setIsLoading(true);
                 const params: any = {
@@ -120,8 +100,8 @@ export default function CardStoryPreview() {
             }
         }
 
-        fetchFilteredStories();
-    }, [api, debouncedSearch, selectedCategoryId, currentPage, globalStories, isGlobalLoading, transformStories]);
+        fetchStories();
+    }, [api, debouncedSearch, selectedCategoryId, currentPage, refreshKey, transformStories]);
 
     if (error) {
         return (
@@ -132,6 +112,7 @@ export default function CardStoryPreview() {
                     selectedCategory={selectedCategoryId}
                     setSelectedCategory={handleCategoryChange}
                     categories={categories}
+                    onStoryCreated={handleStoryCreated}
                 />
                 <div className="rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
                     {error}
