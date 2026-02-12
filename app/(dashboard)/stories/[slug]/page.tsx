@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApi } from "@/lib/api/ApiProvider";
 import type { Story } from "@/repositories";
-import { IconArrowLeft, IconCalendar, IconUser, IconCategory, IconEdit } from "@tabler/icons-react";
+import { IconArrowLeft, IconCalendar, IconUser, IconCategory, IconEdit, IconTrash } from "@tabler/icons-react";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 export default function StoryDetailPage() {
     const params = useParams();
@@ -18,6 +19,16 @@ export default function StoryDetailPage() {
     const [story, setStory] = useState<Story | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const handleDeleteStory = async () => {
+        try {
+            await api.stories.delete(story.id);
+            router.push("/stories");
+        } catch (err) {
+            console.error("Error deleting story:", err);
+            setError("Failed to delete story");
+        }
+    };
 
     useEffect(() => {
         async function fetchStory() {
@@ -138,13 +149,22 @@ export default function StoryDetailPage() {
                     </InteractiveHoverButton>
                 </Link>
 
-                <Link
-                    href={`/stories/edit/${story.id}`}
-                    className="flex items-center gap-2 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-gray-200"
-                >
-                    <IconEdit className="h-4 w-4" />
-                    <span>Edit Story</span>
-                </Link>
+                <div className="flex items-center gap-2">
+                    <Button
+                        onClick={handleDeleteStory}
+                        className="flex items-center gap-2 rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 dark:bg-white dark:text-neutral-900 dark:hover:bg-gray-200 cursor-pointer"
+                    >
+                        <IconTrash className="h-4 w-4" />
+                        Delete Story
+                    </Button>
+                    <Link
+                        href={`/stories/edit/${story.id}`}
+                        className="flex items-center gap-2 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-gray-200"
+                    >
+                        <IconEdit className="h-4 w-4" />
+                        <span>Edit Story</span>
+                    </Link>
+                </div>
             </div>
 
             <div className="mb-10 text-center">
