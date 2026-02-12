@@ -151,7 +151,7 @@ export interface CreateCategoryRequest {
 
 export interface UpdateCategoryRequest {
     name?: string
-    description?: string
+    slug?: string
 }
 
 export interface CategoryListParams {

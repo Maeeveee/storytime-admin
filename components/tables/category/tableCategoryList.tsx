@@ -591,29 +591,115 @@ export default function TableCategoryList() {
 }
 
 function RowActions({ row }: { row: Row<Category> }) {
+  const api = useApi();
+  const [editOpen, setEditOpen] = useState(false);
+  const [name, setName] = useState(row.original.name);
+  const [slug, setSlug] = useState(row.original.slug);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleEditOpen = () => {
+    setName(row.original.name);
+    setSlug(row.original.slug);
+    setEditOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
+    if (!slug.trim()) {
+      toast.error("Slug is required");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.categories.update(row.original.id, {
+        name: name.trim(),
+        slug: slug.trim(),
+      });
+
+      toast.success("Category updated successfully!");
+      setEditOpen(false);
+      // Update the row data locally
+      row.original.name = name.trim();
+      row.original.slug = slug.trim();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update category");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="flex justify-end">
-          <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
-            <EllipsisIcon size={16} aria-hidden="true" />
-          </Button>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <span>Edit</span>
-            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="flex justify-end">
+            <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
+              <EllipsisIcon size={16} aria-hidden="true" />
+            </Button>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuItem onSelect={handleEditOpen}>
+              <span>Edit</span>
+              <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <span>Delete</span>
+            <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
-          <span>Delete</span>
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Sheet open={editOpen} onOpenChange={setEditOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Edit Category</SheetTitle>
+            <SheetDescription>
+              Update category details.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid flex-1 auto-rows-min gap-6 px-4">
+            <div className="grid gap-3">
+              <Label htmlFor={`edit-category-name-${row.original.id}`}>Category Name</Label>
+              <Input
+                id={`edit-category-name-${row.original.id}`}
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSlug(slugify(e.target.value));
+                }}
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor={`edit-category-slug-${row.original.id}`}>Slug</Label>
+              <Input
+                id={`edit-category-slug-${row.original.id}`}
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+          <SheetFooter>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Saving..." : "Save"}
+            </Button>
+            <SheetClose asChild>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
 
