@@ -145,7 +145,7 @@ export interface Category {
 
 export interface CreateCategoryRequest {
     name: string
-    description?: string
+    slug: string
 }
 
 export interface UpdateCategoryRequest {

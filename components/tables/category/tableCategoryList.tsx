@@ -87,9 +87,19 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { useApi } from "@/lib/api/ApiProvider";
-import { Category, Story } from "@/repositories";
+import { Category, Story, type ApiClient } from "@/repositories";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { useStoryStore } from "@/stores/useStoryStore";
+import { toast } from "sonner";
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-');
+}
 
 type CategoryWithCount = Category & { stories_count: number };
 
@@ -381,38 +391,14 @@ export default function TableCategoryList() {
             </AlertDialog>
           )}
           {/* Add category button */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button className="ml-auto" variant="outline">
-                <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
-                Add Category
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Add Category</SheetTitle>
-                <SheetDescription>
-                  Add a new category to the list.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                <div className="grid gap-3">
-                  <Label htmlFor="sheet-category-name">Category Name</Label>
-                  <Input id="sheet-category-name" defaultValue="New Category" />
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="sheet-category-slug">Slug</Label>
-                  <Input id="sheet-category-slug" defaultValue="new-category" />
-                </div>
-              </div>
-              <SheetFooter>
-                <Button>Add</Button>
-                <SheetClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </SheetClose>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
+          <AddCategorySheet api={api} onCategoryCreated={async () => {
+            try {
+              const response = await api.categories.getList({ limit: 100 });
+              setDisplayCategories(response.data);
+            } catch (err) {
+              console.error("Failed to refresh categories", err);
+            }
+          }} />
         </div>
       </div>
 
@@ -628,5 +614,103 @@ function RowActions({ row }: { row: Row<Category> }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function AddCategorySheet({ api, onCategoryCreated }: { api: ApiClient; onCategoryCreated: () => void }) {
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    setSlug(slugify(value));
+  };
+
+  const resetForm = () => {
+    setName("");
+    setSlug("");
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
+    if (!slug.trim()) {
+      toast.error("Slug is required");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.categories.create({
+        name: name.trim(),
+        slug: slug.trim(),
+      });
+
+      toast.success("Category created successfully!");
+      resetForm();
+      setSheetOpen(false);
+      onCategoryCreated();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create category");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Sheet open={sheetOpen} onOpenChange={(open) => {
+      setSheetOpen(open);
+      if (!open) resetForm();
+    }}>
+      <SheetTrigger asChild>
+        <Button className="ml-auto" variant="outline">
+          <PlusIcon className="-ms-1 opacity-60" size={16} aria-hidden="true" />
+          Add Category
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Add Category</SheetTitle>
+          <SheetDescription>
+            Add a new category to the list.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="grid flex-1 auto-rows-min gap-6 px-4">
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-category-name">Category Name</Label>
+            <Input
+              id="sheet-category-name"
+              placeholder="Enter category name..."
+              value={name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="grid gap-3">
+            <Label htmlFor="sheet-category-slug">Slug</Label>
+            <Input
+              id="sheet-category-slug"
+              placeholder="auto-generated-slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              disabled={isSubmitting}
+            />
+          </div>
+        </div>
+        <SheetFooter>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Adding..." : "Add"}
+          </Button>
+          <SheetClose asChild>
+            <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
