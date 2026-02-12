@@ -510,35 +510,182 @@ export default function TableUserList({ data }: TableUserListProps) {
 }
 
 function RowActions({ row }: { row: Row<User> }) {
+  const api = useApi();
+  const [editOpen, setEditOpen] = useState(false);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [name, setName] = useState(row.original.name);
+  const [email, setEmail] = useState(row.original.email);
+  const [about, setAbout] = useState(row.original.about);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleEditOpen = () => {
+    setName(row.original.name);
+    setEmail(row.original.email);
+    setAbout(row.original.about);
+    setEditOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await api.users.update(Number(row.original.id), {
+        name: name.trim(),
+        email: email.trim(),
+        about: about?.trim(),
+      });
+
+      toast.success("User updated successfully!");
+      setEditOpen(false);
+      row.original.name = name.trim();
+      row.original.email = email.trim();
+      row.original.about = about?.trim();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      setIsSubmitting(true);
+      await api.users.resetPassword(Number(row.original.id));
+      toast.success("Password reset successfully!");
+      setResetPasswordOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reset password");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await api.users.delete(Number(row.original.id));
+      toast.success("User deleted successfully!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete user");
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="flex justify-end">
-          <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
-            <EllipsisIcon size={16} aria-hidden="true" />
-          </Button>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuGroup>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Edit</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>Edit Profile</DropdownMenuItem>
-                <DropdownMenuItem>Reset Password</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
-          <span>Delete</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="flex justify-end">
+            <Button size="icon" variant="ghost" className="shadow-none" aria-label="Edit item">
+              <EllipsisIcon size={16} aria-hidden="true" />
+            </Button>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Edit</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onSelect={handleEditOpen}>Edit Profile</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setResetPasswordOpen(true)}>Reset Password</DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={handleDelete}>
+            <span>Delete</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Edit Profile Sheet */}
+      <Sheet open={editOpen} onOpenChange={setEditOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Edit Profile</SheetTitle>
+            <SheetDescription>
+              Update user profile details.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid flex-1 auto-rows-min gap-6 px-4">
+            <div className="grid gap-3">
+              <Label htmlFor={`edit-user-name-${row.original.id}`}>Name</Label>
+              <Input
+                id={`edit-user-name-${row.original.id}`}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor={`edit-user-email-${row.original.id}`}>Email</Label>
+              <Input
+                id={`edit-user-email-${row.original.id}`}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor={`edit-user-about-${row.original.id}`}>About</Label>
+              <Input
+                id={`edit-user-about-${row.original.id}`}
+                type="text"
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+          <SheetFooter>
+            <Button onClick={handleEditSubmit} disabled={isSubmitting}>
+              {isSubmitting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Saving..." : "Save"}
+            </Button>
+            <SheetClose asChild>
+              <Button variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Reset Password Confirmation */}
+      <AlertDialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
+        <AlertDialogContent>
+          <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true">
+              <CircleAlertIcon className="opacity-80" size={16} />
+            </div>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset Password</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to reset the password for <strong>{row.original.name}</strong>? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetPassword} disabled={isSubmitting}>
+              {isSubmitting ? "Resetting..." : "Reset Password"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
+
 
 function AddUserSheet({ onUserCreated }: { onUserCreated: () => void }) {
   const api = useApi();

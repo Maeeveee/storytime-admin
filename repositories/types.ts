@@ -69,6 +69,7 @@ export interface User {
     id: number
     name: string
     email: string
+    about?: string
     profile_image?: string
     created_at: string
     updated_at: string
@@ -84,6 +85,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
     name?: string
     email?: string
+    about?: string
 }
 
 // ============================================
