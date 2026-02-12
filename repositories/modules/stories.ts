@@ -31,7 +31,7 @@ export default class StoriesModule {
     }
 
     async updateCover(id: number, formData: FormData): Promise<ApiResponse<Story>> {
-        return this.factory.post<ApiResponse<Story>>(`/admin/stories/${id}/cover`, formData as unknown as Record<string, unknown>)
+        return this.factory.post<ApiResponse<Story>>(`/admin/stories/${id}/cover`, formData as any)
     }
 
     async delete(id: number): Promise<ApiResponse<null>> {

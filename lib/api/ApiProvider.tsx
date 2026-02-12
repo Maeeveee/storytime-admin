@@ -28,7 +28,11 @@ export function ApiProvider({
         const customFetch: typeof fetch = async (input, init = {}) => {
             const headers = new Headers(init.headers)
             headers.set('Accept', 'application/json')
-            headers.set('Content-Type', 'application/json')
+
+            // Don't set Content-Type for FormData — browser needs to set multipart boundary automatically
+            if (!(init.body instanceof FormData)) {
+                headers.set('Content-Type', 'application/json')
+            }
 
             const authToken = getCookie('token')
             if (authToken) {
