@@ -81,7 +81,7 @@ export default function CardStoryPreview() {
             try {
                 setIsLoading(true);
                 const params: any = {
-                    limit: 100,
+                    limit: 12,
                     page: currentPage,
                     sort_by: sortBy,
                     sort_order: 'desc'
