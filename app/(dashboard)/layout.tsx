@@ -58,7 +58,7 @@ export default function DashboardLayout({ children, }: { children: React.ReactNo
     useEffect(() => {
         if (stories.length === 0) {
             setStoriesLoading(true)
-            api.stories.getList({ limit: 12 }).then(res => {
+            api.stories.getList({ limit: 100 }).then(res => {
                 setStories(res.data)
                 setTotalStories(res.meta.pagination.total)
             }).catch(err => {
@@ -72,7 +72,7 @@ export default function DashboardLayout({ children, }: { children: React.ReactNo
     useEffect(() => {
         if (users.length === 0) {
             setUsersLoading(true)
-            api.users.getList({ limit: 12 }).then(res => {
+            api.users.getList({ limit: 100 }).then(res => {
                 setUsers(res.data)
                 setTotalUser(res.meta.pagination.total)
             }).catch(err => {
