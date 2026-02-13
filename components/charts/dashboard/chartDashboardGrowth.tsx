@@ -18,28 +18,24 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 
-export const description = "A multiple bar chart"
+export const description = "A bar chart"
 
 
 const chartConfig = {
-  users: {
-    label: "New Users",
-    color: "var(--chart-1)",
-  },
   stories: {
-    label: "New Stories",
+    label: "Stories",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
-export function ChartDashboardGrowth({ data }: { data?: { month: string; users: number; stories: number }[] }) {
+export function ChartDashboardGrowth({ data }: { data?: { month: string; stories: number }[] }) {
   const displayData = data || []
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Platform Growth</CardTitle>
-        <CardDescription>New Users vs New Stories</CardDescription>
+        <CardTitle>Story Growth</CardTitle>
+        <CardDescription>Stories created per month</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
@@ -56,7 +52,6 @@ export function ChartDashboardGrowth({ data }: { data?: { month: string; users: 
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="users" fill="var(--color-users)" barSize={20} radius={2} />
             <Bar dataKey="stories" fill="var(--color-stories)" barSize={20} radius={2} />
           </BarChart>
         </ChartContainer>
@@ -64,3 +59,4 @@ export function ChartDashboardGrowth({ data }: { data?: { month: string; users: 
     </Card>
   )
 }
+

@@ -180,3 +180,22 @@ export interface UserListParams {
     sort_by?: 'created_at' | 'name' | 'email'
     sort_order?: 'asc' | 'desc'
 }
+
+// ============================================
+// Dashboard Types
+// ============================================
+
+export interface DashboardSummary {
+    total_categories: number
+    total_users: number
+    total_stories: number
+}
+
+export interface MonthlyStoryCount {
+    month: string
+    count: number
+}
+
+export interface DashboardOverview {
+    overview: MonthlyStoryCount[]
+}
